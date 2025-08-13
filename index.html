@@ -20,6 +20,7 @@
         margin: 5px;
         font-size: 1.2em;
         cursor: pointer;
+        border-radius: 5px;
     }
     button:hover {
         background: #666;
@@ -34,6 +35,7 @@
         padding: 10px;
         text-align: left;
         border: 1px solid #555;
+        border-radius: 5px;
     }
     .bar-container {
         width: 80%;
@@ -55,6 +57,49 @@
         width: 0%;
         transition: width 0.3s;
     }
+    /* Ficha do Personagem */
+    .ficha-personagem {
+        background: #2a2a2a;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 20px auto;
+        max-width: 400px;
+        border: 2px solid #444;
+    }
+    .ficha-linha {
+        display: flex;
+        justify-content: space-between;
+        margin: 8px 0;
+        padding: 5px;
+        background: #333;
+        border-radius: 5px;
+    }
+    .ficha-label {
+        font-weight: bold;
+        color: #ffd700;
+    }
+    .ficha-valor {
+        color: #fff;
+    }
+    /* Combatentes na Batalha */
+    .combatentes {
+        display: flex;
+        justify-content: space-around;
+        margin: 20px 0;
+    }
+    .combatente {
+        background: #2a2a2a;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 10px;
+        border: 2px solid #444;
+        flex: 1;
+        max-width: 300px;
+    }
+    .combatente h3 {
+        color: #ffd700;
+        margin-bottom: 10px;
+    }
     /* Modal de Level Up */
     #telaLevelUp {
         display: none;
@@ -71,44 +116,110 @@
         background: #ff9800;
         font-size: 1.2em;
     }
+    @media (max-width: 600px) {
+        .combatentes {
+            flex-direction: column;
+        }
+    }
 </style>
 </head>
 <body>
 
 <div id="cidade">
-    <h1>Cidade</h1>
-    <p><strong>Herói:</strong> <span id="nomeHeroi"></span> | Nível: <span id="nivelHeroi"></span></p>
-    <div class="bar-container"><div id="hpBar" class="hp-bar"></div></div>
-    <p>HP: <span id="hpHeroi"></span>/<span id="hpMaxHeroi"></span></p>
-    <div class="bar-container"><div id="xpBar" class="xp-bar"></div></div>
-    <p>XP: <span id="xpHeroi"></span>/<span id="xpProxNivel"></span></p>
-    <button onclick="recuperar()">Recuperar</button>
-    <button onclick="iniciarBatalha()">Lutar</button>
+    <h1>🏰 Cidade</h1>
+    
+    <div class="ficha-personagem">
+        <h2>⚔️ Ficha do Personagem</h2>
+        <div class="ficha-linha">
+            <span class="ficha-label">Nome:</span>
+            <span class="ficha-valor" id="nomeHeroi"></span>
+        </div>
+        <div class="ficha-linha">
+            <span class="ficha-label">Nível:</span>
+            <span class="ficha-valor" id="nivelHeroi"></span>
+        </div>
+        <div class="ficha-linha">
+            <span class="ficha-label">HP:</span>
+            <span class="ficha-valor"><span id="hpHeroi"></span>/<span id="hpMaxHeroi"></span></span>
+        </div>
+        <div class="bar-container"><div id="hpBar" class="hp-bar"></div></div>
+        <div class="ficha-linha">
+            <span class="ficha-label">XP:</span>
+            <span class="ficha-valor"><span id="xpHeroi"></span>/<span id="xpProxNivel"></span></span>
+        </div>
+        <div class="bar-container"><div id="xpBar" class="xp-bar"></div></div>
+        <div class="ficha-linha">
+            <span class="ficha-label">Ataque:</span>
+            <span class="ficha-valor" id="ataqueHeroi"></span>
+        </div>
+        <div class="ficha-linha">
+            <span class="ficha-label">Vitórias:</span>
+            <span class="ficha-valor" id="vitoriasHeroi"></span>
+        </div>
+        <div class="ficha-linha">
+            <span class="ficha-label">Derrotas:</span>
+            <span class="ficha-valor" id="derrotasHeroi"></span>
+        </div>
+        <div class="ficha-linha">
+            <span class="ficha-label">XP Total Ganho:</span>
+            <span class="ficha-valor" id="xpTotalHeroi"></span>
+        </div>
+    </div>
+    
+    <button onclick="recuperar()">💚 Recuperar</button>
+    <button onclick="iniciarBatalha()">⚔️ Lutar</button>
 </div>
 
 <div id="batalha" style="display:none;">
-    <h1>Batalha</h1>
-    <p><strong>Inimigo:</strong> <span id="nomeInimigo"></span></p>
-    <div class="bar-container"><div id="hpBarInimigo" class="hp-bar" style="background:#f44336;"></div></div>
-    <p>HP: <span id="hpInimigo"></span>/<span id="hpMaxInimigo"></span></p>
+    <h1>⚔️ Batalha</h1>
+    
+    <div class="combatentes">
+        <div class="combatente">
+            <h3>👤 <span id="nomeHeroiBatalha"></span></h3>
+            <div class="ficha-linha">
+                <span class="ficha-label">Nível:</span>
+                <span class="ficha-valor" id="nivelHeroiBatalha"></span>
+            </div>
+            <div class="ficha-linha">
+                <span class="ficha-label">HP:</span>
+                <span class="ficha-valor"><span id="hpHeroiBatalha"></span>/<span id="hpMaxHeroiBatalha"></span></span>
+            </div>
+            <div class="bar-container"><div id="hpBarHeroiBatalha" class="hp-bar"></div></div>
+        </div>
+        
+        <div class="combatente">
+            <h3>👹 <span id="nomeInimigo"></span></h3>
+            <div class="ficha-linha">
+                <span class="ficha-label">HP:</span>
+                <span class="ficha-valor"><span id="hpInimigo"></span>/<span id="hpMaxInimigo"></span></span>
+            </div>
+            <div class="bar-container"><div id="hpBarInimigo" class="hp-bar" style="background:#f44336;"></div></div>
+        </div>
+    </div>
+    
     <div id="battleLog"></div>
-    <button onclick="atacar()">Atacar</button>
-    <button onclick="fugir()">Fugir</button>
+    <button onclick="atacar()">⚔️ Atacar</button>
+    <button onclick="fugir()">🏃 Fugir</button>
 </div>
 
 <div id="telaLevelUp">
-    <h2>Você subiu para o nível <span id="novoNivel"></span>!</h2>
+    <h2>🎉 Você subiu para o nível <span id="novoNivel"></span>!</h2>
+    <p>Seus atributos melhoraram!</p>
     <button onclick="fecharLevelUp()">OK</button>
 </div>
 
 <script>
 let heroi = {
-    nome: "Arus",
+    nome: "Herói",
     hp: 50,
     hpMax: 50,
     nivel: 1,
     xp: 0,
-    xpProx: 100
+    xpProx: 100,
+    ataque: 15,
+    vitorias: 0,
+    derrotas: 0,
+    xpTotal: 0
 };
 
 let inimigo = {};
@@ -122,83 +233,106 @@ function atualizarCidade(){
     document.getElementById("xpHeroi").innerText = heroi.xp;
     document.getElementById("xpProxNivel").innerText = heroi.xpProx;
     document.getElementById("xpBar").style.width = (heroi.xp/heroi.xpProx)*100 + "%";
+    document.getElementById("ataqueHeroi").innerText = heroi.ataque + " - " + (heroi.ataque + 5);
+    document.getElementById("vitoriasHeroi").innerText = heroi.vitorias;
+    document.getElementById("derrotasHeroi").innerText = heroi.derrotas;
+    document.getElementById("xpTotalHeroi").innerText = heroi.xpTotal;
+}
+
+function atualizarBatalha(){
+    document.getElementById("nomeHeroiBatalha").innerText = heroi.nome;
+    document.getElementById("nivelHeroiBatalha").innerText = heroi.nivel;
+    document.getElementById("hpHeroiBatalha").innerText = heroi.hp;
+    document.getElementById("hpMaxHeroiBatalha").innerText = heroi.hpMax;
+    document.getElementById("hpBarHeroiBatalha").style.width = (heroi.hp/heroi.hpMax)*100 + "%";
+    
+    document.getElementById("nomeInimigo").innerText = inimigo.nome;
+    document.getElementById("hpInimigo").innerText = inimigo.hp;
+    document.getElementById("hpMaxInimigo").innerText = inimigo.hpMax;
+    document.getElementById("hpBarInimigo").style.width = (inimigo.hp/inimigo.hpMax)*100 + "%";
 }
 
 function recuperar(){
     heroi.hp = heroi.hpMax;
     atualizarCidade();
+    alert("HP totalmente recuperado!");
 }
 
 function iniciarBatalha(){
     inimigo = {
         nome: ["Slime","Goblin","Orc","Lobo","Esqueleto","Bandido"][Math.floor(Math.random()*6)],
-        hpMax: 40,
-        hp: 40
+        hpMax: Math.floor(Math.random()*21)+20,
+        hp: 0
     };
-    document.getElementById("nomeInimigo").innerText = inimigo.nome;
-    document.getElementById("hpInimigo").innerText = inimigo.hp;
-    document.getElementById("hpMaxInimigo").innerText = inimigo.hpMax;
-    document.getElementById("hpBarInimigo").style.width = "100%";
-    document.getElementById("battleLog").innerText = "A batalha começou!";
+    inimigo.hp = inimigo.hpMax;
+    
+    document.getElementById("battleLog").innerHTML = "A batalha começou!<br>Um " + inimigo.nome + " selvagem apareceu!";
     document.getElementById("cidade").style.display = "none";
     document.getElementById("batalha").style.display = "block";
+    atualizarBatalha();
 }
 
 function atacar(){
-    let dano = Math.floor(Math.random()*11)+10;
+    let dano = Math.floor(Math.random()*6)+heroi.ataque;
     inimigo.hp -= dano;
     if(inimigo.hp < 0) inimigo.hp = 0;
-    document.getElementById("battleLog").innerText += `\nVocê causou ${dano} de dano.`;
-    document.getElementById("hpInimigo").innerText = inimigo.hp;
-    document.getElementById("hpBarInimigo").style.width = (inimigo.hp/inimigo.hpMax)*100 + "%";
+    
+    document.getElementById("battleLog").innerHTML += "<br><span style='color: #ff6b6b;'>Você causou " + dano + " de dano!</span>";
+    atualizarBatalha();
+    
     if(inimigo.hp <= 0){
         vitoria();
         return;
     }
-    turnoInimigo();
+    
+    setTimeout(turnoInimigo, 1000);
 }
 
 function turnoInimigo(){
     let dano = Math.floor(Math.random()*11)+5;
     heroi.hp -= dano;
     if(heroi.hp < 0) heroi.hp = 0;
-    document.getElementById("battleLog").innerText += `\nO inimigo causou ${dano} de dano.`;
-    document.getElementById("hpHeroi").innerText = heroi.hp;
-    document.getElementById("hpBar").style.width = (heroi.hp/heroi.hpMax)*100 + "%";
+    
+    document.getElementById("battleLog").innerHTML += "<br><span style='color: #ff9800;'>" + inimigo.nome + " causou " + dano + " de dano em você!</span>";
+    atualizarBatalha();
+    
     if(heroi.hp <= 0){
         derrota();
     }
 }
 
-function fuga(){
-    document.getElementById("battleLog").innerText += "\nVocê fugiu!";
-    document.getElementById("batalha").style.display = "none";
-    document.getElementById("cidade").style.display = "block";
-}
-
 function fugir(){
-    fuga();
+    document.getElementById("battleLog").innerHTML += "<br><span style='color: #2196f3;'>Você fugiu da batalha!</span>";
+    setTimeout(fimBatalha, 1000);
 }
 
 function vitoria(){
-    document.getElementById("battleLog").innerText += "\nVocê venceu!";
+    document.getElementById("battleLog").innerHTML += "<br><span style='color: #4caf50;'>Você venceu a batalha!</span>";
+    document.getElementById("battleLog").innerHTML += "<br><span style='color: #ffeb3b;'>Você ganhou 50 XP!</span>";
+    
+    heroi.vitorias++;
     heroi.xp += 50;
+    heroi.xpTotal += 50;
+    
     if(heroi.xp >= heroi.xpProx){
         heroi.nivel++;
         heroi.xp = 0;
         heroi.hpMax += 10;
         heroi.hp = heroi.hpMax;
+        heroi.ataque += 2;
         heroi.xpProx = heroi.nivel * 100;
-        mostrarLevelUp();
+        setTimeout(mostrarLevelUp, 1500);
     } else {
-        fimBatalha();
+        setTimeout(fimBatalha, 2000);
     }
 }
 
 function derrota(){
-    document.getElementById("battleLog").innerText += "\nVocê foi derrotado...";
+    document.getElementById("battleLog").innerHTML += "<br><span style='color: #f44336;'>Você foi derrotado...</span>";
+    document.getElementById("battleLog").innerHTML += "<br><span style='color: #ff9800;'>Voltando para a cidade com 1 HP.</span>";
     heroi.hp = 1;
-    fimBatalha();
+    heroi.derrotas++;
+    setTimeout(fimBatalha, 2000);
 }
 
 function fimBatalha(){
