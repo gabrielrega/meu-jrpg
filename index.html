@@ -1,134 +1,224 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RPG Batalha - Protótipo</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>RPG Batalha por Turnos</title>
+<style>
+    body {
+        background: #1a1a1a;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+    button {
+        background: #444;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        margin: 5px;
+        font-size: 1.2em;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #666;
+    }
+    #battleLog {
+        width: 90%;
+        height: 200px;
+        background: #000;
+        color: lime;
+        overflow-y: auto;
+        margin: 10px auto;
+        padding: 10px;
+        text-align: left;
+        border: 1px solid #555;
+    }
+    .bar-container {
+        width: 80%;
+        background: #333;
+        margin: 5px auto;
+        height: 20px;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    .hp-bar {
+        height: 100%;
+        background: #4caf50;
+        width: 100%;
+        transition: width 0.3s;
+    }
+    .xp-bar {
+        height: 100%;
+        background: #2196f3;
+        width: 0%;
+        transition: width 0.3s;
+    }
+    /* Modal de Level Up */
+    #telaLevelUp {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8);
+        color: white;
+        z-index: 9999;
+        text-align: center;
+        padding-top: 30%;
+    }
+    #telaLevelUp button {
+        background: #ff9800;
+        font-size: 1.2em;
+    }
+</style>
 </head>
 <body>
-    <div class="container">
-        <!-- Tela da Cidade -->
-        <div id="tela-cidade" class="tela">
-            <div class="card">
-                <div class="card__header">
-                    <h1>Cidade - RPG Batalha</h1>
-                </div>
-                <div class="card__body">
-                    <div class="heroi-info">
-                        <h2>Informações do Herói</h2>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Nome:</span>
-                                <span class="info-value" id="heroi-nome">Herói</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Nível:</span>
-                                <span class="info-value" id="heroi-nivel">1</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">HP:</span>
-                                <span class="info-value">
-                                    <span id="heroi-hp">50</span> / <span id="heroi-max-hp">50</span>
-                                </span>
-                                <div class="hp-bar">
-                                    <div class="hp-bar-fill" id="heroi-hp-bar"></div>
-                                </div>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">XP:</span>
-                                <span class="info-value">
-                                    <span id="heroi-xp">0</span> / <span id="heroi-xp-max">100</span>
-                                </span>
-                                <div class="xp-bar">
-                                    <div class="xp-bar-fill" id="heroi-xp-bar"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="acoes-cidade">
-                        <button class="btn btn--lg btn--secondary btn--full-width" id="btn-recuperar">
-                            🏥 Recuperar HP
-                        </button>
-                        <button class="btn btn--lg btn--primary btn--full-width" id="btn-lutar">
-                            ⚔️ Ir Lutar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Tela de Batalha -->
-        <div id="tela-batalha" class="tela hidden">
-            <div class="card">
-                <div class="card__header">
-                    <h1>⚔️ Batalha</h1>
-                    <button class="btn btn--sm btn--outline" id="btn-fugir">Fugir</button>
-                </div>
-                <div class="card__body">
-                    <div class="batalha-info">
-                        <!-- Lado Esquerdo - Herói -->
-                        <div class="combatente">
-                            <h3>Herói</h3>
-                            <div class="combatente-stats">
-                                <div class="stat-item">
-                                    <span class="stat-label">Nível:</span>
-                                    <span id="batalla-heroi-nivel">1</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">HP:</span>
-                                    <span id="batalha-heroi-hp">50</span> / <span id="batalha-heroi-max-hp">50</span>
-                                </div>
-                                <div class="hp-bar">
-                                    <div class="hp-bar-fill" id="batalha-heroi-hp-bar"></div>
-                                </div>
-                            </div>
-                        </div>
+<div id="cidade">
+    <h1>Cidade</h1>
+    <p><strong>Herói:</strong> <span id="nomeHeroi"></span> | Nível: <span id="nivelHeroi"></span></p>
+    <div class="bar-container"><div id="hpBar" class="hp-bar"></div></div>
+    <p>HP: <span id="hpHeroi"></span>/<span id="hpMaxHeroi"></span></p>
+    <div class="bar-container"><div id="xpBar" class="xp-bar"></div></div>
+    <p>XP: <span id="xpHeroi"></span>/<span id="xpProxNivel"></span></p>
+    <button onclick="recuperar()">Recuperar</button>
+    <button onclick="iniciarBatalha()">Lutar</button>
+</div>
 
-                        <!-- Lado Direito - Inimigo -->
-                        <div class="combatente">
-                            <h3 id="inimigo-nome">Inimigo</h3>
-                            <div class="combatente-stats">
-                                <div class="stat-item">
-                                    <span class="stat-label">HP:</span>
-                                    <span id="inimigo-hp">30</span> / <span id="inimigo-max-hp">30</span>
-                                </div>
-                                <div class="hp-bar">
-                                    <div class="hp-bar-fill" id="inimigo-hp-bar"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+<div id="batalha" style="display:none;">
+    <h1>Batalha</h1>
+    <p><strong>Inimigo:</strong> <span id="nomeInimigo"></span></p>
+    <div class="bar-container"><div id="hpBarInimigo" class="hp-bar" style="background:#f44336;"></div></div>
+    <p>HP: <span id="hpInimigo"></span>/<span id="hpMaxInimigo"></span></p>
+    <div id="battleLog"></div>
+    <button onclick="atacar()">Atacar</button>
+    <button onclick="fugir()">Fugir</button>
+</div>
 
-                    <!-- Log de Batalha -->
-                    <div class="log-batalha">
-                        <h4>Log da Batalha</h4>
-                        <div class="log-container" id="log-container">
-                            <p class="log-message">A batalha começou!</p>
-                        </div>
-                    </div>
+<div id="telaLevelUp">
+    <h2>Você subiu para o nível <span id="novoNivel"></span>!</h2>
+    <button onclick="fecharLevelUp()">OK</button>
+</div>
 
-                    <!-- Ações de Batalha -->
-                    <div class="acoes-batalha">
-                        <button class="btn btn--lg btn--primary" id="btn-atacar">
-                            ⚔️ Atacar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+<script>
+let heroi = {
+    nome: "Arus",
+    hp: 50,
+    hpMax: 50,
+    nivel: 1,
+    xp: 0,
+    xpProx: 100
+};
 
-        <!-- Modal de Level Up -->
-        <div id="modal-levelup" class="modal hidden">
-            <div class="modal-content">
-                <h2>🎉 Level Up!</h2>
-                <p id="levelup-text">Parabéns! Você subiu para o nível 2!</p>
-                <button class="btn btn--primary" id="btn-fechar-levelup">Continuar</button>
-            </div>
-        </div>
-    </div>
+let inimigo = {};
 
-    <script src="app.js"></script>
+function atualizarCidade(){
+    document.getElementById("nomeHeroi").innerText = heroi.nome;
+    document.getElementById("nivelHeroi").innerText = heroi.nivel;
+    document.getElementById("hpHeroi").innerText = heroi.hp;
+    document.getElementById("hpMaxHeroi").innerText = heroi.hpMax;
+    document.getElementById("hpBar").style.width = (heroi.hp/heroi.hpMax)*100 + "%";
+    document.getElementById("xpHeroi").innerText = heroi.xp;
+    document.getElementById("xpProxNivel").innerText = heroi.xpProx;
+    document.getElementById("xpBar").style.width = (heroi.xp/heroi.xpProx)*100 + "%";
+}
+
+function recuperar(){
+    heroi.hp = heroi.hpMax;
+    atualizarCidade();
+}
+
+function iniciarBatalha(){
+    inimigo = {
+        nome: ["Slime","Goblin","Orc","Lobo","Esqueleto","Bandido"][Math.floor(Math.random()*6)],
+        hpMax: 40,
+        hp: 40
+    };
+    document.getElementById("nomeInimigo").innerText = inimigo.nome;
+    document.getElementById("hpInimigo").innerText = inimigo.hp;
+    document.getElementById("hpMaxInimigo").innerText = inimigo.hpMax;
+    document.getElementById("hpBarInimigo").style.width = "100%";
+    document.getElementById("battleLog").innerText = "A batalha começou!";
+    document.getElementById("cidade").style.display = "none";
+    document.getElementById("batalha").style.display = "block";
+}
+
+function atacar(){
+    let dano = Math.floor(Math.random()*11)+10;
+    inimigo.hp -= dano;
+    if(inimigo.hp < 0) inimigo.hp = 0;
+    document.getElementById("battleLog").innerText += `\nVocê causou ${dano} de dano.`;
+    document.getElementById("hpInimigo").innerText = inimigo.hp;
+    document.getElementById("hpBarInimigo").style.width = (inimigo.hp/inimigo.hpMax)*100 + "%";
+    if(inimigo.hp <= 0){
+        vitoria();
+        return;
+    }
+    turnoInimigo();
+}
+
+function turnoInimigo(){
+    let dano = Math.floor(Math.random()*11)+5;
+    heroi.hp -= dano;
+    if(heroi.hp < 0) heroi.hp = 0;
+    document.getElementById("battleLog").innerText += `\nO inimigo causou ${dano} de dano.`;
+    document.getElementById("hpHeroi").innerText = heroi.hp;
+    document.getElementById("hpBar").style.width = (heroi.hp/heroi.hpMax)*100 + "%";
+    if(heroi.hp <= 0){
+        derrota();
+    }
+}
+
+function fuga(){
+    document.getElementById("battleLog").innerText += "\nVocê fugiu!";
+    document.getElementById("batalha").style.display = "none";
+    document.getElementById("cidade").style.display = "block";
+}
+
+function fugir(){
+    fuga();
+}
+
+function vitoria(){
+    document.getElementById("battleLog").innerText += "\nVocê venceu!";
+    heroi.xp += 50;
+    if(heroi.xp >= heroi.xpProx){
+        heroi.nivel++;
+        heroi.xp = 0;
+        heroi.hpMax += 10;
+        heroi.hp = heroi.hpMax;
+        heroi.xpProx = heroi.nivel * 100;
+        mostrarLevelUp();
+    } else {
+        fimBatalha();
+    }
+}
+
+function derrota(){
+    document.getElementById("battleLog").innerText += "\nVocê foi derrotado...";
+    heroi.hp = 1;
+    fimBatalha();
+}
+
+function fimBatalha(){
+    atualizarCidade();
+    document.getElementById("batalha").style.display = "none";
+    document.getElementById("cidade").style.display = "block";
+}
+
+function mostrarLevelUp(){
+    document.getElementById("novoNivel").innerText = heroi.nivel;
+    document.getElementById("telaLevelUp").style.display = "block";
+}
+
+function fecharLevelUp(){
+    document.getElementById("telaLevelUp").style.display = "none";
+    fimBatalha();
+}
+
+atualizarCidade();
+</script>
+
 </body>
 </html>
