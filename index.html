@@ -124,12 +124,43 @@ let heroi = {
 };
 
 // Lista de monstros com tesouro
+
+// Lista de 25 monstros com atributos, peso e tesouro
 const listaMonstros = [
+    // Fracos (mais comuns)
     {nome: "Slime", hpMax: 20, forca: 5, defesa: 2, agilidade: 3, peso: 40, tesouro: 10},
+    {nome: "Rato Gigante", hpMax: 18, forca: 4, defesa: 1, agilidade: 5, peso: 38, tesouro: 8},
+    {nome: "Morcego Sombrio", hpMax: 16, forca: 5, defesa: 1, agilidade: 7, peso: 35, tesouro: 9},
+    {nome: "Abelha Assassina", hpMax: 14, forca: 6, defesa: 1, agilidade: 9, peso: 34, tesouro: 10},
+    {nome: "Goblin", hpMax: 22, forca: 6, defesa: 2, agilidade: 4, peso: 32, tesouro: 12},
+
+    // Pouco fortes
     {nome: "Lobo", hpMax: 30, forca: 8, defesa: 4, agilidade: 6, peso: 25, tesouro: 15},
+    {nome: "Gnoll", hpMax: 28, forca: 9, defesa: 3, agilidade: 5, peso: 24, tesouro: 16},
+    {nome: "Kobold", hpMax: 26, forca: 8, defesa: 3, agilidade: 7, peso: 23, tesouro: 14},
+    {nome: "Zumbi", hpMax: 35, forca: 7, defesa: 5, agilidade: 2, peso: 22, tesouro: 18},
+    {nome: "Esqueleto Soldado", hpMax: 32, forca: 8, defesa: 4, agilidade: 3, peso: 21, tesouro: 17},
+
+    // Médios
     {nome: "Orc", hpMax: 45, forca: 12, defesa: 6, agilidade: 4, peso: 20, tesouro: 25},
+    {nome: "Lançador de Rocha", hpMax: 50, forca: 11, defesa: 7, agilidade: 3, peso: 18, tesouro: 28},
+    {nome: "Arqueiro Bandido", hpMax: 40, forca: 9, defesa: 5, agilidade: 8, peso: 18, tesouro: 26},
+    {nome: "Aranha Gigante", hpMax: 38, forca: 10, defesa: 4, agilidade: 7, peso: 17, tesouro: 22},
+    {nome: "Troglodita", hpMax: 48, forca: 11, defesa: 6, agilidade: 5, peso: 16, tesouro: 24},
+
+    // Fortes
     {nome: "Cavaleiro Negro", hpMax: 60, forca: 15, defesa: 10, agilidade: 7, peso: 10, tesouro: 40},
-    {nome: "Dragão Jovem", hpMax: 80, forca: 20, defesa: 12, agilidade: 8, peso: 5, tesouro: 80}
+    {nome: "Minotauro", hpMax: 65, forca: 17, defesa: 9, agilidade: 6, peso: 9, tesouro: 45},
+    {nome: "Homem Urso", hpMax: 62, forca: 16, defesa: 8, agilidade: 5, peso: 8, tesouro: 42},
+    {nome: "Gárgula Viva", hpMax: 55, forca: 14, defesa: 12, agilidade: 4, peso: 8, tesouro: 38},
+    {nome: "Elemental de Terra", hpMax: 70, forca: 18, defesa: 14, agilidade: 3, peso: 7, tesouro: 50},
+
+    // Muito fortes (raros)
+    {nome: "Dragão Jovem", hpMax: 80, forca: 20, defesa: 12, agilidade: 8, peso: 5, tesouro: 80},
+    {nome: "Quimera", hpMax: 85, forca: 21, defesa: 13, agilidade: 7, peso: 4, tesouro: 85},
+    {nome: "Hidra Menor", hpMax: 90, forca: 22, defesa: 14, agilidade: 6, peso: 3, tesouro: 90},
+    {nome: "Dragão Ancião", hpMax: 100, forca: 25, defesa: 15, agilidade: 9, peso: 2, tesouro: 120},
+    {nome: "Demônio de Fogo", hpMax: 95, forca: 23, defesa: 13, agilidade: 8, peso: 2, tesouro: 100}
 ];
 
 let inimigo = {};
