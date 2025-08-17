@@ -18,12 +18,20 @@
     .combatentes { display: flex; justify-content: space-around; margin: 20px 0; }
     .combatente { background: #2a2a2a; border-radius: 10px; padding: 15px; margin: 10px; border: 2px solid #444; flex: 1; max-width: 300px; }
     .combatente h3 { color: #ffd700; margin-bottom: 10px; }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: white; z-index: 9999; text-align: center; padding-top: 20%; }
-    .modal-content { background: #2a2a2a; padding: 30px; border-radius: 10px; margin: 0 auto; max-width: 500px; border: 2px solid #444; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: white; z-index: 9999; text-align: center; padding-top: 10%; }
+    .modal-content { background: #2a2a2a; padding: 30px; border-radius: 10px; margin: 0 auto; max-width: 500px; border: 2px solid #444; max-height: 80%; overflow-y: auto; }
     .modal button { background: #ff9800; font-size: 1.2em; }
     .ouro { color: #ffd700; font-weight: bold; }
     .aviso { color: #ff6b6b; font-style: italic; }
-    @media (max-width: 600px) { .combatentes { flex-direction: column; } }
+    .status { display: flex; flex-wrap: wrap; gap: 5px; margin: 5px 0; }
+    .status-item { background: #ff4444; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; }
+    .status-item.buff { background: #44ff44; }
+    .loja { background: #2a2a2a; border-radius: 10px; padding: 15px; margin: 20px auto; max-width: 400px; border: 2px solid #444; }
+    .item-loja { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; padding: 8px; background: #333; border-radius: 5px; }
+    .inventario { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
+    .item-inventario { background: #333; padding: 5px 10px; border-radius: 5px; font-size: 0.9em; }
+    .lista-consumiveis { max-height: 200px; overflow-y: auto; }
+    @media (max-width: 600px) { .combatentes { flex-direction: column; } .modal-content { max-width: 90%; } }
 </style>
 </head>
 <body>
@@ -44,6 +52,14 @@
         <div class="ficha-linha"><span class="ficha-label">Agilidade:</span><span id="agiHeroi"></span></div>
         <div class="ficha-linha"><span class="ficha-label">Vitórias:</span><span id="vitoriasHeroi"></span></div>
         <div class="ficha-linha"><span class="ficha-label">Derrotas:</span><span id="derrotasHeroi"></span></div>
+        
+        <h3>📦 Inventário</h3>
+        <div class="inventario" id="inventarioDisplay"></div>
+    </div>
+    
+    <div class="loja">
+        <h2>🛒 Loja de Consumíveis</h2>
+        <div id="listaLoja"></div>
     </div>
     
     <div style="margin: 20px;">
@@ -64,6 +80,7 @@
             <p>HP: <span id="hpHeroiBatalha"></span>/<span id="hpMaxHeroiBatalha"></span></p>
             <div class="bar-container"><div id="hpBarHeroiBatalha" class="hp-bar"></div></div>
             <p>Agi: <span id="agiHeroiBatalha"></span></p>
+            <div class="status" id="statusHeroiBatalha"></div>
         </div>
         <div class="combatente">
             <h3>👹 <span id="nomeInimigo"></span></h3>
@@ -71,10 +88,12 @@
             <p>HP: <span id="hpInimigo"></span>/<span id="hpMaxInimigo"></span></p>
             <div class="bar-container"><div id="hpBarInimigo" class="hp-bar" style="background:#f44336;"></div></div>
             <p>Agi: <span id="agiInimigo"></span></p>
+            <div class="status" id="statusInimigo"></div>
         </div>
     </div>
     <div id="battleLog"></div>
     <button onclick="atacar()">⚔️ Atacar</button>
+    <button id="btnUsarItem" onclick="mostrarConsumivel()">🧪 Usar Item</button>
     <button onclick="fugir()">🏃 Fugir</button>
 </div>
 
@@ -105,6 +124,15 @@
     </div>
 </div>
 
+<!-- Modal Consumíveis -->
+<div id="modalConsumiveis" class="modal">
+    <div class="modal-content">
+        <h2>🧪 Usar Consumível</h2>
+        <div class="lista-consumiveis" id="listaConsumiveis"></div>
+        <button onclick="fecharConsumiveis()">Cancelar</button>
+    </div>
+</div>
+
 <script>
 let heroi = {
     nome: "Herói",
@@ -113,54 +141,72 @@ let heroi = {
     hp: 50,
     xp: 0,
     xpProx: 100,
-    ouro: 50, // começa com 50 moedas
+    ouro: 100, // começar com mais ouro para poder comprar itens
     forca: 10,
     defesa: 5,
     agilidade: 5,
     dano: 15,
     vitorias: 0,
     derrotas: 0,
-    xpTotal: 0
+    xpTotal: 0,
+    status: {
+        veneno: 0,
+        paralisia: 0,
+        forcaBuff: 0,
+        defesaBuff: 0
+    },
+    inventario: {
+        pocao: 2, // começar com algumas poções
+        antidoto: 1,
+        pocaoForca: 0,
+        pocaoDefesa: 0
+    }
 };
 
-// Lista de monstros com tesouro
+// Lista de consumíveis disponíveis na loja
+const consumiveisLoja = [
+    {nome: "Poção de Cura", id: "pocao", preco: 30, descricao: "Restaura 30 HP"},
+    {nome: "Antídoto", id: "antidoto", preco: 20, descricao: "Remove veneno e paralisia"},
+    {nome: "Poção de Força", id: "pocaoForca", preco: 50, descricao: "Aumenta ataque por 5 turnos"},
+    {nome: "Poção de Defesa", id: "pocaoDefesa", preco: 40, descricao: "Aumenta defesa por 5 turnos"}
+];
 
-// Lista de 25 monstros com atributos, peso e tesouro
+// Lista de 25 monstros (alguns com habilidades especiais de status)
 const listaMonstros = [
     // Fracos (mais comuns)
     {nome: "Slime", hpMax: 20, forca: 5, defesa: 2, agilidade: 3, peso: 40, tesouro: 10},
     {nome: "Rato Gigante", hpMax: 18, forca: 4, defesa: 1, agilidade: 5, peso: 38, tesouro: 8},
     {nome: "Morcego Sombrio", hpMax: 16, forca: 5, defesa: 1, agilidade: 7, peso: 35, tesouro: 9},
-    {nome: "Abelha Assassina", hpMax: 14, forca: 6, defesa: 1, agilidade: 9, peso: 34, tesouro: 10},
+    {nome: "Abelha Assassina", hpMax: 14, forca: 6, defesa: 1, agilidade: 9, peso: 34, tesouro: 10, status: "veneno"},
     {nome: "Goblin", hpMax: 22, forca: 6, defesa: 2, agilidade: 4, peso: 32, tesouro: 12},
 
     // Pouco fortes
     {nome: "Lobo", hpMax: 30, forca: 8, defesa: 4, agilidade: 6, peso: 25, tesouro: 15},
     {nome: "Gnoll", hpMax: 28, forca: 9, defesa: 3, agilidade: 5, peso: 24, tesouro: 16},
     {nome: "Kobold", hpMax: 26, forca: 8, defesa: 3, agilidade: 7, peso: 23, tesouro: 14},
-    {nome: "Zumbi", hpMax: 35, forca: 7, defesa: 5, agilidade: 2, peso: 22, tesouro: 18},
+    {nome: "Zumbi", hpMax: 35, forca: 7, defesa: 5, agilidade: 2, peso: 22, tesouro: 18, status: "paralisia"},
     {nome: "Esqueleto Soldado", hpMax: 32, forca: 8, defesa: 4, agilidade: 3, peso: 21, tesouro: 17},
 
     // Médios
     {nome: "Orc", hpMax: 45, forca: 12, defesa: 6, agilidade: 4, peso: 20, tesouro: 25},
     {nome: "Lançador de Rocha", hpMax: 50, forca: 11, defesa: 7, agilidade: 3, peso: 18, tesouro: 28},
     {nome: "Arqueiro Bandido", hpMax: 40, forca: 9, defesa: 5, agilidade: 8, peso: 18, tesouro: 26},
-    {nome: "Aranha Gigante", hpMax: 38, forca: 10, defesa: 4, agilidade: 7, peso: 17, tesouro: 22},
+    {nome: "Aranha Gigante", hpMax: 38, forca: 10, defesa: 4, agilidade: 7, peso: 17, tesouro: 22, status: "veneno"},
     {nome: "Troglodita", hpMax: 48, forca: 11, defesa: 6, agilidade: 5, peso: 16, tesouro: 24},
 
     // Fortes
     {nome: "Cavaleiro Negro", hpMax: 60, forca: 15, defesa: 10, agilidade: 7, peso: 10, tesouro: 40},
     {nome: "Minotauro", hpMax: 65, forca: 17, defesa: 9, agilidade: 6, peso: 9, tesouro: 45},
     {nome: "Homem Urso", hpMax: 62, forca: 16, defesa: 8, agilidade: 5, peso: 8, tesouro: 42},
-    {nome: "Gárgula Viva", hpMax: 55, forca: 14, defesa: 12, agilidade: 4, peso: 8, tesouro: 38},
+    {nome: "Gárgula Viva", hpMax: 55, forca: 14, defesa: 12, agilidade: 4, peso: 8, tesouro: 38, status: "paralisia"},
     {nome: "Elemental de Terra", hpMax: 70, forca: 18, defesa: 14, agilidade: 3, peso: 7, tesouro: 50},
 
     // Muito fortes (raros)
     {nome: "Dragão Jovem", hpMax: 80, forca: 20, defesa: 12, agilidade: 8, peso: 5, tesouro: 80},
-    {nome: "Quimera", hpMax: 85, forca: 21, defesa: 13, agilidade: 7, peso: 4, tesouro: 85},
+    {nome: "Quimera", hpMax: 85, forca: 21, defesa: 13, agilidade: 7, peso: 4, tesouro: 85, status: "veneno"},
     {nome: "Hidra Menor", hpMax: 90, forca: 22, defesa: 14, agilidade: 6, peso: 3, tesouro: 90},
     {nome: "Dragão Ancião", hpMax: 100, forca: 25, defesa: 15, agilidade: 9, peso: 2, tesouro: 120},
-    {nome: "Demônio de Fogo", hpMax: 95, forca: 23, defesa: 13, agilidade: 8, peso: 2, tesouro: 100}
+    {nome: "Demônio de Fogo", hpMax: 95, forca: 23, defesa: 13, agilidade: 8, peso: 2, tesouro: 100, status: "paralisia"}
 ];
 
 let inimigo = {};
@@ -182,6 +228,9 @@ function atualizarCidade(){
     document.getElementById("vitoriasHeroi").innerText = heroi.vitorias;
     document.getElementById("derrotasHeroi").innerText = heroi.derrotas;
     
+    atualizarInventarioDisplay();
+    atualizarLoja();
+    
     // Verificar se pode recuperar
     if (heroi.ouro >= custoRecuperacao && heroi.hp < heroi.hpMax) {
         document.getElementById("btnRecuperar").disabled = false;
@@ -194,6 +243,63 @@ function atualizarCidade(){
             document.getElementById("avisoOuro").style.display = "none";
         }
     }
+}
+
+function atualizarInventarioDisplay(){
+    const inventarioDiv = document.getElementById("inventarioDisplay");
+    inventarioDiv.innerHTML = "";
+    
+    for (let [item, quantidade] of Object.entries(heroi.inventario)) {
+        if (quantidade > 0) {
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "item-inventario";
+            const nomeItem = consumiveisLoja.find(c => c.id === item)?.nome || item;
+            itemDiv.innerText = `${nomeItem}: ${quantidade}`;
+            inventarioDiv.appendChild(itemDiv);
+        }
+    }
+    
+    if (inventarioDiv.innerHTML === "") {
+        inventarioDiv.innerHTML = "<div class='item-inventario'>Inventário vazio</div>";
+    }
+}
+
+function atualizarLoja(){
+    const lojaDiv = document.getElementById("listaLoja");
+    lojaDiv.innerHTML = "";
+    
+    consumiveisLoja.forEach(item => {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "item-loja";
+        
+        const podeComprar = heroi.ouro >= item.preco;
+        
+        itemDiv.innerHTML = `
+            <div>
+                <strong>${item.nome}</strong><br>
+                <small>${item.descricao}</small>
+            </div>
+            <div>
+                <span class="ouro">${item.preco}💰</span>
+                <button onclick="comprarItem('${item.id}')" ${!podeComprar ? 'disabled' : ''}>
+                    Comprar
+                </button>
+            </div>
+        `;
+        
+        lojaDiv.appendChild(itemDiv);
+    });
+}
+
+function comprarItem(itemId){
+    const item = consumiveisLoja.find(c => c.id === itemId);
+    if (!item || heroi.ouro < item.preco) return;
+    
+    heroi.ouro -= item.preco;
+    heroi.inventario[itemId]++;
+    
+    atualizarCidade();
+    alert(`${item.nome} comprado!`);
 }
 
 function atualizarBatalha(){
@@ -211,15 +317,84 @@ function atualizarBatalha(){
     document.getElementById("hpMaxInimigo").innerText = inimigo.hpMax;
     document.getElementById("hpBarInimigo").style.width = (inimigo.hp/inimigo.hpMax)*100 + "%";
     document.getElementById("agiInimigo").innerText = inimigo.agilidade;
+    
+    atualizarStatusDisplay();
+    atualizarBotaoItem();
+}
+
+function atualizarStatusDisplay(){
+    // Status do herói
+    const statusHeroiDiv = document.getElementById("statusHeroiBatalha");
+    statusHeroiDiv.innerHTML = "";
+    
+    if (heroi.status.veneno > 0) {
+        statusHeroiDiv.innerHTML += `<div class="status-item">🟢 Veneno ${heroi.status.veneno}</div>`;
+    }
+    if (heroi.status.paralisia > 0) {
+        statusHeroiDiv.innerHTML += `<div class="status-item">⚡ Paralisia ${heroi.status.paralisia}</div>`;
+    }
+    if (heroi.status.forcaBuff > 0) {
+        statusHeroiDiv.innerHTML += `<div class="status-item buff">💪 Força+ ${heroi.status.forcaBuff}</div>`;
+    }
+    if (heroi.status.defesaBuff > 0) {
+        statusHeroiDiv.innerHTML += `<div class="status-item buff">🛡️ Defesa+ ${heroi.status.defesaBuff}</div>`;
+    }
+    
+    // Status do inimigo
+    const statusInimigoDiv = document.getElementById("statusInimigo");
+    statusInimigoDiv.innerHTML = "";
+    
+    if (inimigo.status?.veneno > 0) {
+        statusInimigoDiv.innerHTML += `<div class="status-item">🟢 Veneno ${inimigo.status.veneno}</div>`;
+    }
+    if (inimigo.status?.paralisia > 0) {
+        statusInimigoDiv.innerHTML += `<div class="status-item">⚡ Paralisia ${inimigo.status.paralisia}</div>`;
+    }
+}
+
+function atualizarBotaoItem(){
+    const btnItem = document.getElementById("btnUsarItem");
+    const temItens = Object.values(heroi.inventario).some(q => q > 0);
+    btnItem.disabled = !temItens;
 }
 
 function selecionarInimigo(){
     let totalPeso = listaMonstros.reduce((sum, m) => sum + m.peso, 0);
     let r = Math.random() * totalPeso;
     for (let m of listaMonstros){
-        if (r < m.peso) return JSON.parse(JSON.stringify(m));
+        if (r < m.peso) {
+            const inimigo = JSON.parse(JSON.stringify(m));
+            inimigo.status = { veneno: 0, paralisia: 0 };
+            return inimigo;
+        }
         r -= m.peso;
     }
+}
+
+function processarStatus(){
+    // Processar status do herói
+    if (heroi.status.veneno > 0) {
+        const dano = 3;
+        heroi.hp -= dano;
+        if (heroi.hp < 0) heroi.hp = 0;
+        document.getElementById("battleLog").innerHTML += `<br><span style="color: #44ff44;">Veneno causou ${dano} de dano no herói!</span>`;
+        heroi.status.veneno--;
+    }
+    
+    if (heroi.status.forcaBuff > 0) heroi.status.forcaBuff--;
+    if (heroi.status.defesaBuff > 0) heroi.status.defesaBuff--;
+    if (heroi.status.paralisia > 0) heroi.status.paralisia--;
+    
+    // Processar status do inimigo
+    if (inimigo.status?.veneno > 0) {
+        const dano = 3;
+        inimigo.hp -= dano;
+        if (inimigo.hp < 0) inimigo.hp = 0;
+        document.getElementById("battleLog").innerHTML += `<br><span style="color: #44ff44;">Veneno causou ${dano} de dano no ${inimigo.nome}!</span>`;
+        inimigo.status.veneno--;
+    }
+    
+    if (inimigo.status?.paralisia > 0) inimigo.status.paralisia--;
 }
 
 function recuperar(){
@@ -234,6 +409,7 @@ function recuperar(){
 function iniciarBatalha(){
     inimigo = selecionarInimigo();
     inimigo.hp = inimigo.hpMax;
+    
     document.getElementById("battleLog").innerHTML = `Um ${inimigo.nome} apareceu!<br>Você pode ganhar ${inimigo.tesouro} moedas de ouro!`;
     document.getElementById("cidade").style.display = "none";
     document.getElementById("batalha").style.display = "block";
@@ -248,8 +424,21 @@ function chanceAcerto(agilAtacante, agilDefensor){
 }
 
 function atacar(){
+    // Verificar paralisia do herói
+    if (heroi.status.paralisia > 0 && Math.random() < 0.3) {
+        document.getElementById("battleLog").innerHTML += `<br><span style="color: #ff9800;">Você está paralisado e perdeu o turno!</span>`;
+        setTimeout(turnoInimigo, 1000);
+        return;
+    }
+    
     if(Math.random() * 100 < chanceAcerto(heroi.agilidade, inimigo.agilidade)){
         let dano = heroi.dano - Math.floor(inimigo.defesa/2);
+        
+        // Aplicar buff de força
+        if (heroi.status.forcaBuff > 0) {
+            dano += 5;
+        }
+        
         if (dano < 1) dano = 1;
         inimigo.hp -= dano;
         if(inimigo.hp < 0) inimigo.hp = 0;
@@ -257,23 +446,124 @@ function atacar(){
     } else {
         document.getElementById("battleLog").innerHTML += `<br><span style="color: #ff9800;">Você errou o ataque!</span>`;
     }
+    
+    processarStatus();
     atualizarBatalha();
-    if(inimigo.hp <= 0){ vitoria(); return; }
-    setTimeout(turnoInimigo, 800);
+    
+    if(inimigo.hp <= 0){ 
+        vitoria(); 
+        return; 
+    }
+    if(heroi.hp <= 0){ 
+        derrota(); 
+        return; 
+    }
+    
+    setTimeout(turnoInimigo, 1000);
 }
 
 function turnoInimigo(){
+    // Verificar paralisia do inimigo
+    if (inimigo.status?.paralisia > 0 && Math.random() < 0.3) {
+        document.getElementById("battleLog").innerHTML += `<br><span style="color: #ff9800;">${inimigo.nome} está paralisado e perdeu o turno!</span>`;
+        atualizarBatalha();
+        return;
+    }
+    
     if(Math.random() * 100 < chanceAcerto(inimigo.agilidade, heroi.agilidade)){
-        let dano = inimigo.forca - Math.floor(heroi.defesa/2);
+        let dano = inimigo.forca - Math.floor((heroi.defesa + (heroi.status.defesaBuff > 0 ? 5 : 0))/2);
         if(dano < 1) dano = 1;
         heroi.hp -= dano;
         if(heroi.hp < 0) heroi.hp = 0;
         document.getElementById("battleLog").innerHTML += `<br><span style="color: #f44336;">${inimigo.nome} acertou e causou ${dano} de dano!</span>`;
+        
+        // Aplicar status especial do monstro
+        if (inimigo.status && Math.random() < 0.3) {
+            if (inimigo.status === "veneno" && heroi.status.veneno === 0) {
+                heroi.status.veneno = 3;
+                document.getElementById("battleLog").innerHTML += `<br><span style="color: #44ff44;">Você foi envenenado!</span>`;
+            } else if (inimigo.status === "paralisia" && heroi.status.paralisia === 0) {
+                heroi.status.paralisia = 2;
+                document.getElementById("battleLog").innerHTML += `<br><span style="color: #ffff44;">Você foi paralisado!</span>`;
+            }
+        }
     } else {
         document.getElementById("battleLog").innerHTML += `<br><span style="color: #ff9800;">${inimigo.nome} errou o ataque!</span>`;
     }
+    
     atualizarBatalha();
     if(heroi.hp <= 0){ derrota(); }
+}
+
+function mostrarConsumivel(){
+    const itensDisponiveis = Object.entries(heroi.inventario).filter(([item, qtd]) => qtd > 0);
+    
+    if (itensDisponiveis.length === 0) {
+        alert("Nenhum item disponível!");
+        return;
+    }
+    
+    const listaDiv = document.getElementById("listaConsumiveis");
+    listaDiv.innerHTML = "";
+    
+    itensDisponiveis.forEach(([itemId, quantidade]) => {
+        const item = consumiveisLoja.find(c => c.id === itemId);
+        if (item) {
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "item-loja";
+            itemDiv.innerHTML = `
+                <div>
+                    <strong>${item.nome}</strong> (${quantidade})<br>
+                    <small>${item.descricao}</small>
+                </div>
+                <button onclick="usarItem('${itemId}')">Usar</button>
+            `;
+            listaDiv.appendChild(itemDiv);
+        }
+    });
+    
+    document.getElementById("modalConsumiveis").style.display = "block";
+}
+
+function usarItem(itemId){
+    if (heroi.inventario[itemId] <= 0) return;
+    
+    heroi.inventario[itemId]--;
+    const item = consumiveisLoja.find(c => c.id === itemId);
+    
+    document.getElementById("battleLog").innerHTML += `<br><span style="color: #2196f3;">Você usou ${item.nome}!</span>`;
+    
+    switch(itemId) {
+        case "pocao":
+            const cura = 30;
+            heroi.hp += cura;
+            if (heroi.hp > heroi.hpMax) heroi.hp = heroi.hpMax;
+            document.getElementById("battleLog").innerHTML += `<br><span style="color: #4caf50;">Você recuperou ${cura} HP!</span>`;
+            break;
+        case "antidoto":
+            heroi.status.veneno = 0;
+            heroi.status.paralisia = 0;
+            document.getElementById("battleLog").innerHTML += `<br><span style="color: #4caf50;">Status negativos removidos!</span>`;
+            break;
+        case "pocaoForca":
+            heroi.status.forcaBuff = 5;
+            document.getElementById("battleLog").innerHTML += `<br><span style="color: #4caf50;">Sua força aumentou por 5 turnos!</span>`;
+            break;
+        case "pocaoDefesa":
+            heroi.status.defesaBuff = 5;
+            document.getElementById("battleLog").innerHTML += `<br><span style="color: #4caf50;">Sua defesa aumentou por 5 turnos!</span>`;
+            break;
+    }
+    
+    fecharConsumiveis();
+    atualizarBatalha();
+    
+    // Turno do inimigo após usar item
+    setTimeout(turnoInimigo, 1000);
+}
+
+function fecharConsumiveis(){
+    document.getElementById("modalConsumiveis").style.display = "none";
 }
 
 function fugir(){
@@ -300,6 +590,11 @@ function vitoria(){
         heroi.defesa += 1;
         heroi.agilidade += 1;
         heroi.xpProx = heroi.nivel * 100;
+        
+        // Limpar status negativos no level up
+        heroi.status.veneno = 0;
+        heroi.status.paralisia = 0;
+        
         setTimeout(mostrarLevelUp, 1500);
     } else {
         setTimeout(fimBatalha, 2000);
@@ -313,6 +608,10 @@ function derrota(){
 }
 
 function fimBatalha(){
+    // Limpar status negativos ao voltar para cidade
+    heroi.status.veneno = 0;
+    heroi.status.paralisia = 0;
+    
     atualizarCidade();
     document.getElementById("batalha").style.display = "none";
     document.getElementById("cidade").style.display = "block";
@@ -338,7 +637,6 @@ function mostrarGameOver(){
 }
 
 function reiniciarJogo(){
-    // Reset do herói
     heroi = {
         nome: "Herói",
         nivel: 1,
@@ -346,14 +644,26 @@ function reiniciarJogo(){
         hp: 50,
         xp: 0,
         xpProx: 100,
-        ouro: 50,
+        ouro: 100,
         forca: 10,
         defesa: 5,
         agilidade: 5,
         dano: 15,
         vitorias: 0,
         derrotas: 0,
-        xpTotal: 0
+        xpTotal: 0,
+        status: {
+            veneno: 0,
+            paralisia: 0,
+            forcaBuff: 0,
+            defesaBuff: 0
+        },
+        inventario: {
+            pocao: 2,
+            antidoto: 1,
+            pocaoForca: 0,
+            pocaoDefesa: 0
+        }
     };
     
     document.getElementById("telaGameOver").style.display = "none";
