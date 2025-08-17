@@ -1,11 +1,3 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
-
-# Escreva um README para a pagina do projeto no github
-
-Claro! Aqui está um modelo de README.md completo, claro e atraente para sua página do projeto no GitHub:
-
-***
-
 # RPG Batalha por Turnos (HTML5/Web)
 
 Um RPG clássico e acessível de batalhas por turnos, direto no navegador, totalmente em português e sem necessidade de instalação!
