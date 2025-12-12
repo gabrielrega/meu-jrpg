@@ -412,6 +412,14 @@
             
             <button id="btn-recuperar" class="btn-success" onclick="recuperar()">💚 Recuperar (20💰)</button>
             <button onclick="iniciarBatalha()">⚔️ Lutar</button>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #555;">
+                <h3 style="color: #ffd700; margin-bottom: 15px;">💾 Salvar / Carregar</h3>
+                <button onclick="salvarJogo()" style="background: #3498db;">💾 Salvar Jogo</button>
+                <button onclick="carregarJogo()" style="background: #9b59b6;">📂 Carregar Jogo</button>
+                <button onclick="apagarSave()" class="btn-danger" style="font-size: 0.9em; padding: 8px 16px;">🗑️ Apagar Save</button>
+                <p id="save-status" style="margin-top: 10px; font-size: 0.9em; color: #888;"></p>
+            </div>
         </div>
 
         <!-- TELA DE BATALHA -->
@@ -1223,9 +1231,71 @@
             irParaCidade();
         }
 
+        function salvarJogo() {
+            const saveData = {
+                heroi: jogo.heroi,
+                timestamp: new Date().toISOString()
+            };
+            try {
+                localStorage.setItem('rpg_batalha_save', JSON.stringify(saveData));
+                const dataFormatada = new Date().toLocaleString('pt-BR');
+                document.getElementById('save-status').textContent = `✅ Jogo salvo em ${dataFormatada}`;
+                document.getElementById('save-status').style.color = '#27ae60';
+            } catch (e) {
+                document.getElementById('save-status').textContent = '❌ Erro ao salvar o jogo!';
+                document.getElementById('save-status').style.color = '#e74c3c';
+            }
+        }
+
+        function carregarJogo() {
+            try {
+                const saveData = localStorage.getItem('rpg_batalha_save');
+                if (!saveData) {
+                    document.getElementById('save-status').textContent = '⚠️ Nenhum save encontrado!';
+                    document.getElementById('save-status').style.color = '#f39c12';
+                    return false;
+                }
+                const dados = JSON.parse(saveData);
+                jogo.heroi = dados.heroi;
+                jogo.inimigo = null;
+                jogo.turnoDoJogador = true;
+                jogo.batalhaAtiva = false;
+                atualizarCidade();
+                const dataFormatada = new Date(dados.timestamp).toLocaleString('pt-BR');
+                document.getElementById('save-status').textContent = `✅ Jogo carregado! (Salvo em ${dataFormatada})`;
+                document.getElementById('save-status').style.color = '#27ae60';
+                return true;
+            } catch (e) {
+                document.getElementById('save-status').textContent = '❌ Erro ao carregar o jogo!';
+                document.getElementById('save-status').style.color = '#e74c3c';
+                return false;
+            }
+        }
+
+        function apagarSave() {
+            if (confirm('Tem certeza que deseja apagar o save? Esta ação não pode ser desfeita!')) {
+                localStorage.removeItem('rpg_batalha_save');
+                document.getElementById('save-status').textContent = '🗑️ Save apagado!';
+                document.getElementById('save-status').style.color = '#888';
+            }
+        }
+
+        function verificarSaveExistente() {
+            const saveData = localStorage.getItem('rpg_batalha_save');
+            if (saveData) {
+                try {
+                    const dados = JSON.parse(saveData);
+                    const dataFormatada = new Date(dados.timestamp).toLocaleString('pt-BR');
+                    document.getElementById('save-status').textContent = `💾 Save encontrado (${dataFormatada}) - Clique em "Carregar Jogo" para continuar`;
+                    document.getElementById('save-status').style.color = '#3498db';
+                } catch (e) {}
+            }
+        }
+
         // Inicialização
         window.onload = function() {
             atualizarCidade();
+            verificarSaveExistente();
         };
     </script>
 </body>

@@ -19,6 +19,7 @@ The project is served as a static website using Python's built-in HTTP server on
 - Gold economy from battles for healing and item purchases
 - Hero customization with attribute evolution per level
 - Game over screen with final statistics and new game option
+- Save/Load progress using browser localStorage
 - Responsive layout for desktop and mobile
 
 ## Technical Details
