@@ -14,6 +14,8 @@ The project is served as a static website using Python's built-in HTTP server on
 ## Game Features
 - Turn-based battle system with hit chance based on attributes
 - 50+ types of monsters with unique stats and special effects
+- **Boss Encounters**: Every 7 victories, face legendary boss fights with higher rewards
+- 6 unique boss types with high HP, stats, and massive gold/XP rewards
 - Status/debuff system: poison, paralysis, attack/defense buffs
 - Consumable inventory and item shop in the city
 - Gold economy from battles for healing and item purchases

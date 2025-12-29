@@ -548,7 +548,8 @@
             },
             inimigo: null,
             turnoDoJogador: true,
-            batalhaAtiva: false
+            batalhaAtiva: false,
+            vitoriasSdeBoss: 0
         };
 
         // Configurações
@@ -631,8 +632,17 @@
             { nome: "Dragão Ancião", hpMax: 110, forca: 27, defesa: 16, agilidade: 9, peso: 2, tesouro: 140 },
             { nome: "Demônio Supremo", hpMax: 105, forca: 26, defesa: 15, agilidade: 8, peso: 1, tesouro: 130, inflict: "veneno" },
             { nome: "Leviatã", hpMax: 115, forca: 28, defesa: 17, agilidade: 7, peso: 1, tesouro: 150, inflict: "paralisia" },
-            { nome: "Deus Sombrio", hpMax: 120, forca: 30, defesa: 18, agilidade: 10, peso: 1, tesouro: 200 },
-            { nome: "Rei Demônio", hpMax: 125, forca: 32, defesa: 20, agilidade: 12, peso: 1, tesouro: 250, inflict: "paralisia" }
+            { nome: "Deus Sombrio", hpMax: 120, forca: 30, defesa: 18, agilidade: 10, peso: 1, tesouro: 200 }
+        ];
+
+        // Lista de chefes/bosses
+        const BOSSES = [
+            { nome: "🐉 Rei Dragão Antigo", hpMax: 150, forca: 28, defesa: 16, agilidade: 8, tesouro: 300, xpBonus: 200, inflict: "paralisia" },
+            { nome: "💀 Rainha Lich Suprema", hpMax: 130, forca: 26, defesa: 14, agilidade: 9, tesouro: 280, xpBonus: 180, inflict: "paralisia" },
+            { nome: "👹 Titã Gigante da Montanha", hpMax: 160, forca: 30, defesa: 18, agilidade: 6, tesouro: 320, xpBonus: 220 },
+            { nome: "🔥 Lorde dos Abismos Ardentes", hpMax: 140, forca: 29, defesa: 15, agilidade: 7, tesouro: 300, xpBonus: 200, inflict: "paralisia" },
+            { nome: "⚡ Imperador Elemental", hpMax: 135, forca: 27, defesa: 14, agilidade: 10, tesouro: 290, xpBonus: 190, inflict: "paralisia" },
+            { nome: "🗡️ Cavaleiro Sombrio Imortal", hpMax: 145, forca: 26, defesa: 19, agilidade: 8, tesouro: 310, xpBonus: 210 }
         ];
 
         // Funções utilitárias
@@ -846,6 +856,12 @@
         }
 
         function selecionarInimigo() {
+            const h = jogo.heroi;
+            // Verificar se é hora de um boss (a cada 7 vitórias)
+            if (h.vitoriasSdeBoss >= 7 && Math.random() < 0.7) {
+                return selecionarBoss();
+            }
+
             const totalPeso = MONSTROS.reduce((sum, m) => sum + m.peso, 0);
             let r = Math.random() * totalPeso;
             
@@ -864,6 +880,14 @@
             fallback.hp = fallback.hpMax;
             fallback.status = { veneno: 0, paralisia: 0 };
             return fallback;
+        }
+
+        function selecionarBoss() {
+            const boss = JSON.parse(JSON.stringify(BOSSES[Math.floor(Math.random() * BOSSES.length)]));
+            boss.hp = boss.hpMax;
+            boss.status = { veneno: 0, paralisia: 0 };
+            boss.isBoss = true;
+            return boss;
         }
 
         function chanceAcerto(agilAtacante, agilDefensor) {
@@ -933,8 +957,16 @@
             jogo.turnoDoJogador = true;
             
             document.getElementById('battle-log').innerHTML = '';
-            log(`Um ${jogo.inimigo.nome} selvagem apareceu!`, '#00ffff');
-            log(`Você pode ganhar ${jogo.inimigo.tesouro} moedas de ouro!`, '#ffd700');
+            
+            if (jogo.inimigo.isBoss) {
+                log(`⚠️ ⚠️ ⚠️ ${jogo.inimigo.nome} apareceu! ⚠️ ⚠️ ⚠️`, '#ff0000');
+                log(`💀 Um encontro com um CHEFE LENDÁRIO!`, '#ff6666');
+                log(`💰 Você pode ganhar ${jogo.inimigo.tesouro} moedas de ouro!`, '#ffd700');
+                log(`✨ Você pode ganhar muito XP!`, '#ffff00');
+            } else {
+                log(`Um ${jogo.inimigo.nome} selvagem apareceu!`, '#00ffff');
+                log(`Você pode ganhar ${jogo.inimigo.tesouro} moedas de ouro!`, '#ffd700');
+            }
             
             irParaBatalha();
         }
@@ -1125,14 +1157,25 @@
             const i = jogo.inimigo;
             
             jogo.batalhaAtiva = false;
-            log(`🎉 Você derrotou o ${i.nome}!`, '#4caf50');
+            
+            let xpGanho = CONFIG.xpPorVitoria;
+            if (i.isBoss) {
+                xpGanho += i.xpBonus;
+                log(`🎉 🎉 VOCÊ DERROTOU O CHEFE! 🎉 🎉`, '#ffff00');
+                log(`${i.nome} foi vencido!`, '#4caf50');
+                h.vitoriasSdeBoss = 0; // Reset o contador de vitórias para o próximo boss
+            } else {
+                log(`🎉 Você derrotou o ${i.nome}!`, '#4caf50');
+                h.vitoriasSdeBoss++;
+            }
+            
             log(`💰 Você ganhou ${i.tesouro} moedas de ouro!`, '#ffd700');
-            log(`✨ Você ganhou ${CONFIG.xpPorVitoria} XP!`, '#2196f3');
+            log(`✨ Você ganhou ${xpGanho} XP!`, '#2196f3');
             
             h.vitorias++;
             h.ouro += i.tesouro;
-            h.xp += CONFIG.xpPorVitoria;
-            h.xpTotal += CONFIG.xpPorVitoria;
+            h.xp += xpGanho;
+            h.xpTotal += xpGanho;
             
             if (h.xp >= h.xpProx) {
                 h.nivel++;
@@ -1209,6 +1252,7 @@
                     vitorias: 0,
                     derrotas: 0,
                     xpTotal: 0,
+                    vitoriasSdeBoss: 0,
                     status: {
                         veneno: 0,
                         paralisia: 0,
@@ -1224,7 +1268,8 @@
                 },
                 inimigo: null,
                 turnoDoJogador: true,
-                batalhaAtiva: false
+                batalhaAtiva: false,
+                vitoriasSdeBoss: 0
             };
             
             document.getElementById('modal-gameover').style.display = 'none';
