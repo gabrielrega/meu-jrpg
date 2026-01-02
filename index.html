@@ -141,6 +141,12 @@
             background: linear-gradient(90deg, #e74c3c, #c0392b);
         }
 
+        .mp-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #9b59b6, #8e44ad);
+            transition: width 0.4s ease;
+        }
+
         .xp-bar {
             height: 100%;
             background: linear-gradient(90deg, #3498db, #5dade2);
@@ -365,6 +371,15 @@
                     <div class="hp-bar" id="heroi-hp-bar" style="width: 100%"></div>
                 </div>
                 <div class="ficha-linha">
+                    <span class="ficha-label">MP:</span>
+                    <span class="ficha-valor">
+                        <span id="heroi-mp">20</span> / <span id="heroi-max-mp">20</span>
+                    </span>
+                </div>
+                <div class="bar-container">
+                    <div class="mp-bar" id="heroi-mp-bar" style="width: 100%"></div>
+                </div>
+                <div class="ficha-linha">
                     <span class="ficha-label">XP:</span>
                     <span class="ficha-valor">
                         <span id="heroi-xp">0</span> / <span id="heroi-xp-max">100</span>
@@ -434,6 +449,10 @@
                     <div class="bar-container">
                         <div class="hp-bar" id="batalha-heroi-hp-bar" style="width: 100%"></div>
                     </div>
+                    <p>MP: <span id="batalha-heroi-mp">20</span>/<span id="batalha-heroi-max-mp">20</span></p>
+                    <div class="bar-container">
+                        <div class="mp-bar" id="batalha-heroi-mp-bar" style="width: 100%"></div>
+                    </div>
                     <p>Agilidade: <span id="batalha-heroi-agilidade">5</span></p>
                     <div class="status-container">
                         <div class="status" id="status-heroi-batalha"></div>
@@ -459,6 +478,7 @@
             </div>
             
             <button onclick="atacar()">⚔️ Atacar</button>
+            <button id="btn-habilidades" onclick="mostrarHabilidades()">✨ Habilidades</button>
             <button id="btn-usar-item" onclick="mostrarConsumiveis()">🧪 Usar Item</button>
             <button class="btn-danger" onclick="fugir()">🏃 Fugir</button>
         </div>
@@ -515,6 +535,15 @@
         </div>
     </div>
 
+    <!-- MODAL HABILIDADES -->
+    <div id="modal-habilidades" class="modal">
+        <div class="modal-content">
+            <h2>✨ Habilidades Especiais</h2>
+            <div class="lista-consumiveis" id="lista-habilidades"></div>
+            <button onclick="fecharHabilidades()">Cancelar</button>
+        </div>
+    </div>
+
     <script>
         // Estado do jogo
         let jogo = {
@@ -523,6 +552,8 @@
                 nivel: 1,
                 hpMax: 50,
                 hp: 50,
+                mpMax: 20,
+                mp: 20,
                 xp: 0,
                 xpProx: 100,
                 ouro: 100,
@@ -534,6 +565,7 @@
                 derrotas: 0,
                 xpTotal: 0,
                 vitoriasSdeBoss: 0,
+                habilidades: ["golpe_forte"],
                 status: {
                     veneno: 0,
                     paralisia: 0,
@@ -572,6 +604,14 @@
             { id: "pocaoForca", nome: "Poção de Força", preco: 50, descricao: "Aumenta ataque por 5 turnos" },
             { id: "pocaoDefesa", nome: "Poção de Defesa", preco: 40, descricao: "Aumenta defesa por 5 turnos" }
         ];
+
+        // Lista de Habilidades
+        const HABILIDADES = {
+            "golpe_forte": { nome: "Golpe Forte", mp: 5, nivel: 1, descricao: "Causa 1.5x de dano físico" },
+            "cura_rapida": { nome: "Cura Rápida", mp: 8, nivel: 3, descricao: "Restaura 25 HP" },
+            "investida_agil": { nome: "Investida Ágil", mp: 10, nivel: 5, descricao: "Dano alto e remove paralisia" },
+            "furia_berzerker": { nome: "Fúria Berzerker", mp: 15, nivel: 8, descricao: "Dano massivo (2.5x), mas perde 5 HP" }
+        };
 
         // Lista de 50 monstros
         const MONSTROS = [
@@ -697,6 +737,8 @@
             document.getElementById('heroi-ouro').textContent = h.ouro;
             document.getElementById('heroi-hp').textContent = h.hp;
             document.getElementById('heroi-max-hp').textContent = h.hpMax;
+            document.getElementById('heroi-mp').textContent = h.mp;
+            document.getElementById('heroi-max-mp').textContent = h.mpMax;
             document.getElementById('heroi-xp').textContent = h.xp;
             document.getElementById('heroi-xp-max').textContent = h.xpProx;
             document.getElementById('heroi-forca').textContent = h.forca;
@@ -706,6 +748,7 @@
             document.getElementById('heroi-derrotas').textContent = h.derrotas;
             
             atualizarBarraHP('heroi-hp-bar', h.hp, h.hpMax);
+            atualizarBarraMP('heroi-mp-bar', h.mp, h.mpMax);
             atualizarBarraXP();
             atualizarInventarioDisplay();
             atualizarLoja();
@@ -714,7 +757,7 @@
             const btnRecuperar = document.getElementById('btn-recuperar');
             const avisoOuro = document.getElementById('aviso-ouro');
             
-            if (h.ouro >= CONFIG.custoRecuperacao && h.hp < h.hpMax) {
+            if (h.ouro >= CONFIG.custoRecuperacao && (h.hp < h.hpMax || h.mp < h.mpMax)) {
                 btnRecuperar.disabled = false;
                 avisoOuro.classList.add('hidden');
             } else {
@@ -736,8 +779,11 @@
             document.getElementById('batalha-heroi-ouro').textContent = h.ouro;
             document.getElementById('batalha-heroi-hp').textContent = h.hp;
             document.getElementById('batalha-heroi-max-hp').textContent = h.hpMax;
+            document.getElementById('batalha-heroi-mp').textContent = h.mp;
+            document.getElementById('batalha-heroi-max-mp').textContent = h.mpMax;
             document.getElementById('batalha-heroi-agilidade').textContent = h.agilidade;
             atualizarBarraHP('batalha-heroi-hp-bar', h.hp, h.hpMax);
+            atualizarBarraMP('batalha-heroi-mp-bar', h.mp, h.mpMax);
             
             if (i) {
                 document.getElementById('inimigo-nome').textContent = i.nome;
@@ -750,6 +796,109 @@
             
             atualizarStatusDisplay();
             atualizarBotaoItem();
+            atualizarBotaoHabilidades();
+        }
+
+        function atualizarBarraMP(id, atual, max) {
+            const barra = document.getElementById(id);
+            if (barra) {
+                barra.style.width = `${Math.max(0, (atual / max) * 100)}%`;
+            }
+        }
+
+        function atualizarBotaoHabilidades() {
+            const btn = document.getElementById('btn-habilidades');
+            if (btn) {
+                btn.disabled = !jogo.batalhaAtiva || !jogo.turnoDoJogador;
+            }
+        }
+
+        function mostrarHabilidades() {
+            if (!jogo.batalhaAtiva || !jogo.turnoDoJogador) return;
+            
+            const listaDiv = document.getElementById('lista-habilidades');
+            listaDiv.innerHTML = '';
+            
+            jogo.heroi.habilidades.forEach(habId => {
+                const hab = HABILIDADES[habId];
+                if (hab && jogo.heroi.nivel >= hab.nivel) {
+                    const habDiv = document.createElement('div');
+                    habDiv.className = 'item-loja';
+                    
+                    const podeUsar = jogo.heroi.mp >= hab.mp;
+                    
+                    habDiv.innerHTML = `
+                        <div class="item-info">
+                            <div class="item-nome">${hab.nome} <span style="color: #9b59b6;">(${hab.mp} MP)</span></div>
+                            <div class="item-desc">${hab.descricao}</div>
+                        </div>
+                        <button onclick="usarHabilidade('${habId}')" ${!podeUsar ? 'disabled' : ''}>
+                            Usar
+                        </button>
+                    `;
+                    listaDiv.appendChild(habDiv);
+                }
+            });
+            
+            document.getElementById('modal-habilidades').style.display = 'flex';
+        }
+
+        function fecharHabilidades() {
+            document.getElementById('modal-habilidades').style.display = 'none';
+        }
+
+        function usarHabilidade(habId) {
+            const hab = HABILIDADES[habId];
+            if (!hab || jogo.heroi.mp < hab.mp) return;
+            
+            fecharHabilidades();
+            jogo.heroi.mp -= hab.mp;
+            log(`✨ Herói usou ${hab.nome}!`, '#9b59b6');
+            
+            const h = jogo.heroi;
+            const i = jogo.inimigo;
+            let danoBase = Math.floor(Math.random() * (CONFIG.danoHeroiMax - CONFIG.danoHeroiMin + 1)) + CONFIG.danoHeroiMin;
+            danoBase += Math.floor(h.forca / 2);
+
+            switch(habId) {
+                case "golpe_forte":
+                    const danoHab = Math.floor(danoBase * 1.5);
+                    causarDanoInimigo(danoHab);
+                    break;
+                case "cura_rapida":
+                    h.hp = Math.min(h.hpMax, h.hp + 25);
+                    log(`💖 Herói recuperou 25 HP!`, '#2ecc71');
+                    break;
+                case "investida_agil":
+                    causarDanoInimigo(Math.floor(danoBase * 1.2));
+                    if (h.status.paralisia > 0) {
+                        h.status.paralisia = 0;
+                        log(`✨ Paralisia removida!`, '#3498db');
+                    }
+                    break;
+                case "furia_berzerker":
+                    causarDanoInimigo(Math.floor(danoBase * 2.5));
+                    h.hp = Math.max(1, h.hp - 5);
+                    log(`🩸 Fúria custou 5 HP!`, '#e74c3c');
+                    break;
+            }
+            
+            atualizarBatalha();
+            
+            if (i.hp <= 0) {
+                vitoria();
+            } else {
+                jogo.turnoDoJogador = false;
+                setTimeout(turnoInimigo, 1000);
+            }
+        }
+
+        function causarDanoInimigo(dano) {
+            const i = jogo.inimigo;
+            const danoFinal = Math.max(1, dano - Math.floor(i.defesa / 2));
+            i.hp -= danoFinal;
+            if (i.hp < 0) i.hp = 0;
+            log(`💥 Dano causado: ${danoFinal}!`, '#ffd700');
         }
 
         function atualizarStatusDisplay() {
@@ -943,11 +1092,12 @@
         // Ações do jogo
         function recuperar() {
             const h = jogo.heroi;
-            if (h.ouro >= CONFIG.custoRecuperacao && h.hp < h.hpMax) {
+            if (h.ouro >= CONFIG.custoRecuperacao && (h.hp < h.hpMax || h.mp < h.mpMax)) {
                 h.ouro -= CONFIG.custoRecuperacao;
                 h.hp = h.hpMax;
+                h.mp = h.mpMax;
                 atualizarCidade();
-                alert("HP totalmente recuperado! (-20 ouro)");
+                alert("HP e MP totalmente recuperados! (-20 ouro)");
             }
         }
 
@@ -1158,6 +1308,10 @@
             
             jogo.batalhaAtiva = false;
             
+            // Recuperar um pouco de MP na vitória
+            h.mp = Math.min(h.mpMax, h.mp + 5);
+            log(`✨ Você recuperou 5 MP pela vitória!`, '#9b59b6');
+            
             let xpGanho = CONFIG.xpPorVitoria;
             if (i.isBoss) {
                 xpGanho += i.xpBonus;
@@ -1180,12 +1334,25 @@
             if (h.xp >= h.xpProx) {
                 h.nivel++;
                 h.xp = 0;
-                h.hpMax += CONFIG.hpBonusPorNivel;
+                h.mpMax += 5;
                 h.hp = h.hpMax;
+                h.mp = h.mpMax;
                 h.forca += 2;
                 h.defesa += 1;
                 h.agilidade += 1;
                 h.xpProx = h.nivel * 100;
+                
+                // Desbloquear novas habilidades
+                if (h.nivel === 3) {
+                    h.habilidades.push("cura_rapida");
+                    log(`✨ Nova Habilidade: Cura Rápida!`, '#9b59b6');
+                } else if (h.nivel === 5) {
+                    h.habilidades.push("investida_agil");
+                    log(`✨ Nova Habilidade: Investida Ágil!`, '#9b59b6');
+                } else if (h.nivel === 8) {
+                    h.habilidades.push("furia_berzerker");
+                    log(`✨ Nova Habilidade: Fúria Berzerker!`, '#9b59b6');
+                }
                 
                 // Limpar status negativos no level up
                 h.status.veneno = 0;
@@ -1308,6 +1475,14 @@
                 const dataFormatada = new Date(dados.timestamp).toLocaleString('pt-BR');
                 document.getElementById('save-status').textContent = `✅ Jogo carregado! (Salvo em ${dataFormatada})`;
                 document.getElementById('save-status').style.color = '#27ae60';
+
+                // Garantir que MP existe (retrocompatibilidade)
+                if (jogo.heroi.mp === undefined) {
+                    jogo.heroi.mp = 20;
+                    jogo.heroi.mpMax = 20;
+                    jogo.heroi.habilidades = ["golpe_forte"];
+                }
+                
                 return true;
             } catch (e) {
                 document.getElementById('save-status').textContent = '❌ Erro ao carregar o jogo!';
