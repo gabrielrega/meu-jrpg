@@ -1109,7 +1109,8 @@
             const h = jogo.heroi;
             const i = jogo.inimigo;
 
-            if (h.status.paralisia > 0 && Math.random() < 0.3) {
+            // FIX(status): chance de perder turno por paralisia era 30% (quase inútil); ajustado para 60%
+            if (h.status.paralisia > 0 && Math.random() < 0.6) {
                 log('Você está paralisado e perdeu o turno!', '#ff9800');
                 processarStatus();
                 atualizarBatalha();
@@ -1150,7 +1151,8 @@
             const h = jogo.heroi;
             const i = jogo.inimigo;
 
-            if (i.status && i.status.paralisia > 0 && Math.random() < 0.3) {
+            // FIX(status): mesma correção aplicada ao inimigo
+            if (i.status && i.status.paralisia > 0 && Math.random() < 0.6) {
                 log(`${i.nome} está paralisado e perdeu o turno!`, '#ff9800');
                 jogo.turnoDoJogador = true;
                 atualizarBatalha();
