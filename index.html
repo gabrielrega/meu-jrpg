@@ -1235,11 +1235,13 @@
             }
 
             fecharConsumiveis();
+            // FIX(combat): processarStatus antes das checagens de hp, para que veneno
+            // possa matar o inimigo (ou o herói) no mesmo turno em que o item foi usado
             processarStatus();
             atualizarBatalha();
 
-            if (h.hp <= 0) { derrota(); return; }
             if (jogo.inimigo.hp <= 0) { vitoria(); return; }
+            if (h.hp <= 0) { derrota(); return; }
 
             jogo.turnoDoJogador = false;
             setTimeout(turnoInimigo, 1000);
@@ -1269,7 +1271,9 @@
                 xpGanho += i.xpBonus;
                 log(`🎉 🎉 VOCÊ DERROTOU O CHEFE! 🎉 🎉`, '#ffff00');
                 log(`${i.nome} foi vencido!`, '#4caf50');
-                h.vitoriasSdeBoss = 0;
+                // FIX(boss): resetar para 1 e não 0, para exigir 6 vitórias antes
+                // do próximo boss (evita loop onde boss aparece repetidamente)
+                h.vitoriasSdeBoss = 1;
             } else {
                 log(`🎉 Você derrotou o ${i.nome}!`, '#4caf50');
                 h.vitoriasSdeBoss++;
