@@ -421,7 +421,7 @@
             </div>
             
             <div style="margin: 25px 0;">
-                <p class="info-success">💚 Recuperar HP: Custa <span class="ouro">20 ouro</span></p>
+                <p class="info-success">💚 Recuperar HP e MP: Custa <span class="ouro">20 ouro</span></p>
                 <p id="aviso-ouro" class="aviso hidden">Ouro insuficiente para recuperar!</p>
             </div>
             
@@ -560,7 +560,6 @@
                 forca: 10,
                 defesa: 5,
                 agilidade: 5,
-                dano: 15,
                 vitorias: 0,
                 derrotas: 0,
                 xpTotal: 0,
@@ -613,7 +612,7 @@
             "furia_berzerker": { nome: "Fúria Berzerker", mp: 15, nivel: 8, descricao: "Dano massivo (2.5x), mas perde 5 HP" }
         };
 
-        // Lista de 50 monstros
+        // Lista de monstros
         const MONSTROS = [
             // Fracos (mais comuns)
             { nome: "Slime", hpMax: 20, forca: 5, defesa: 2, agilidade: 3, peso: 45, tesouro: 10 },
@@ -626,7 +625,6 @@
             { nome: "Esquilo Pirata", hpMax: 19, forca: 5, defesa: 2, agilidade: 7, peso: 38, tesouro: 9 },
             { nome: "Lesma Ácida", hpMax: 23, forca: 6, defesa: 1, agilidade: 2, peso: 37, tesouro: 13, inflict: "veneno" },
             { nome: "Planta Mordente", hpMax: 25, forca: 7, defesa: 3, agilidade: 2, peso: 36, tesouro: 14 },
-
             // Pouco fortes
             { nome: "Lobo", hpMax: 30, forca: 8, defesa: 4, agilidade: 6, peso: 30, tesouro: 15 },
             { nome: "Gnoll", hpMax: 28, forca: 9, defesa: 3, agilidade: 5, peso: 29, tesouro: 16 },
@@ -638,7 +636,6 @@
             { nome: "Aranha Cinza", hpMax: 29, forca: 8, defesa: 3, agilidade: 7, peso: 23, tesouro: 16, inflict: "veneno" },
             { nome: "Bandido", hpMax: 33, forca: 9, defesa: 4, agilidade: 6, peso: 22, tesouro: 18 },
             { nome: "Guarda Rebelde", hpMax: 36, forca: 10, defesa: 5, agilidade: 3, peso: 21, tesouro: 19 },
-
             // Médios
             { nome: "Orc", hpMax: 45, forca: 12, defesa: 6, agilidade: 4, peso: 18, tesouro: 25 },
             { nome: "Lançador de Rocha", hpMax: 50, forca: 11, defesa: 7, agilidade: 3, peso: 17, tesouro: 28 },
@@ -650,7 +647,6 @@
             { nome: "Ogro", hpMax: 52, forca: 14, defesa: 7, agilidade: 3, peso: 13, tesouro: 28 },
             { nome: "Armadilha Viva", hpMax: 44, forca: 11, defesa: 8, agilidade: 4, peso: 12, tesouro: 25, inflict: "paralisia" },
             { nome: "Besouro Titã", hpMax: 47, forca: 12, defesa: 9, agilidade: 3, peso: 12, tesouro: 27 },
-
             // Fortes
             { nome: "Cavaleiro Negro", hpMax: 60, forca: 15, defesa: 10, agilidade: 7, peso: 9, tesouro: 40 },
             { nome: "Minotauro", hpMax: 65, forca: 17, defesa: 9, agilidade: 6, peso: 8, tesouro: 45 },
@@ -662,7 +658,6 @@
             { nome: "Fênix Menor", hpMax: 60, forca: 15, defesa: 10, agilidade: 8, peso: 5, tesouro: 46 },
             { nome: "Mantícora", hpMax: 80, forca: 20, defesa: 12, agilidade: 7, peso: 4, tesouro: 80, inflict: "veneno" },
             { nome: "Lich Menor", hpMax: 68, forca: 18, defesa: 11, agilidade: 6, peso: 4, tesouro: 55, inflict: "paralisia" },
-
             // Muito fortes (raros)
             { nome: "Dragão Jovem", hpMax: 90, forca: 22, defesa: 14, agilidade: 8, peso: 3, tesouro: 90 },
             { nome: "Quimera", hpMax: 85, forca: 21, defesa: 13, agilidade: 7, peso: 3, tesouro: 85, inflict: "veneno" },
@@ -704,7 +699,6 @@
             if (elemento) {
                 const percent = Math.max(0, (atual / maximo) * 100);
                 elemento.style.width = percent + '%';
-                
                 elemento.classList.remove('low', 'critical');
                 if (percent <= 20) elemento.classList.add('critical');
                 else if (percent <= 50) elemento.classList.add('low');
@@ -746,17 +740,16 @@
             document.getElementById('heroi-agilidade').textContent = h.agilidade;
             document.getElementById('heroi-vitorias').textContent = h.vitorias;
             document.getElementById('heroi-derrotas').textContent = h.derrotas;
-            
+
             atualizarBarraHP('heroi-hp-bar', h.hp, h.hpMax);
             atualizarBarraMP('heroi-mp-bar', h.mp, h.mpMax);
             atualizarBarraXP();
             atualizarInventarioDisplay();
             atualizarLoja();
-            
-            // Verificar se pode recuperar
+
             const btnRecuperar = document.getElementById('btn-recuperar');
             const avisoOuro = document.getElementById('aviso-ouro');
-            
+
             if (h.ouro >= CONFIG.custoRecuperacao && (h.hp < h.hpMax || h.mp < h.mpMax)) {
                 btnRecuperar.disabled = false;
                 avisoOuro.classList.add('hidden');
@@ -773,7 +766,7 @@
         function atualizarBatalha() {
             const h = jogo.heroi;
             const i = jogo.inimigo;
-            
+
             document.getElementById('batalha-heroi-nome').textContent = h.nome;
             document.getElementById('batalha-heroi-nivel').textContent = h.nivel;
             document.getElementById('batalha-heroi-ouro').textContent = h.ouro;
@@ -784,7 +777,7 @@
             document.getElementById('batalha-heroi-agilidade').textContent = h.agilidade;
             atualizarBarraHP('batalha-heroi-hp-bar', h.hp, h.hpMax);
             atualizarBarraMP('batalha-heroi-mp-bar', h.mp, h.mpMax);
-            
+
             if (i) {
                 document.getElementById('inimigo-nome').textContent = i.nome;
                 document.getElementById('inimigo-tesouro').textContent = i.tesouro;
@@ -793,7 +786,7 @@
                 document.getElementById('inimigo-agilidade').textContent = i.agilidade;
                 atualizarBarraHP('inimigo-hp-bar', i.hp, i.hpMax);
             }
-            
+
             atualizarStatusDisplay();
             atualizarBotaoItem();
             atualizarBotaoHabilidades();
@@ -815,18 +808,16 @@
 
         function mostrarHabilidades() {
             if (!jogo.batalhaAtiva || !jogo.turnoDoJogador) return;
-            
+
             const listaDiv = document.getElementById('lista-habilidades');
             listaDiv.innerHTML = '';
-            
+
             jogo.heroi.habilidades.forEach(habId => {
                 const hab = HABILIDADES[habId];
                 if (hab && jogo.heroi.nivel >= hab.nivel) {
                     const habDiv = document.createElement('div');
                     habDiv.className = 'item-loja';
-                    
                     const podeUsar = jogo.heroi.mp >= hab.mp;
-                    
                     habDiv.innerHTML = `
                         <div class="item-info">
                             <div class="item-nome">${hab.nome} <span style="color: #9b59b6;">(${hab.mp} MP)</span></div>
@@ -839,7 +830,7 @@
                     listaDiv.appendChild(habDiv);
                 }
             });
-            
+
             document.getElementById('modal-habilidades').style.display = 'flex';
         }
 
@@ -850,20 +841,20 @@
         function usarHabilidade(habId) {
             const hab = HABILIDADES[habId];
             if (!hab || jogo.heroi.mp < hab.mp) return;
-            
+
             fecharHabilidades();
             jogo.heroi.mp -= hab.mp;
             log(`✨ Herói usou ${hab.nome}!`, '#9b59b6');
-            
+
             const h = jogo.heroi;
             const i = jogo.inimigo;
-            let danoBase = Math.floor(Math.random() * (CONFIG.danoHeroiMax - CONFIG.danoHeroiMin + 1)) + CONFIG.danoHeroiMin;
-            danoBase += Math.floor(h.forca / 2);
+
+            // FIX(combat): dano base agora usa forca do herói (igual ao ataque normal)
+            const danoBase = random(CONFIG.danoHeroiMin, CONFIG.danoHeroiMax) + Math.floor(h.forca / 2);
 
             switch(habId) {
                 case "golpe_forte":
-                    const danoHab = Math.floor(danoBase * 1.5);
-                    causarDanoInimigo(danoHab);
+                    causarDanoInimigo(Math.floor(danoBase * 1.5));
                     break;
                 case "cura_rapida":
                     h.hp = Math.min(h.hpMax, h.hp + 25);
@@ -882,11 +873,15 @@
                     log(`🩸 Fúria custou 5 HP!`, '#e74c3c');
                     break;
             }
-            
+
+            // FIX(combat): processarStatus também ao usar habilidades (veneno/buffs estavam pulando o tick)
+            processarStatus();
             atualizarBatalha();
-            
+
             if (i.hp <= 0) {
                 vitoria();
+            } else if (h.hp <= 0) {
+                derrota();
             } else {
                 jogo.turnoDoJogador = false;
                 setTimeout(turnoInimigo, 1000);
@@ -902,10 +897,9 @@
         }
 
         function atualizarStatusDisplay() {
-            // Status do herói
             const statusHeroi = document.getElementById('status-heroi-batalha');
             statusHeroi.innerHTML = '';
-            
+
             const h = jogo.heroi;
             if (h.status.veneno > 0) {
                 statusHeroi.innerHTML += `<div class="status-item">🟢 Veneno ${h.status.veneno}</div>`;
@@ -919,11 +913,10 @@
             if (h.status.defesaBuff > 0) {
                 statusHeroi.innerHTML += `<div class="status-item buff">🛡️ Defesa+ ${h.status.defesaBuff}</div>`;
             }
-            
-            // Status do inimigo
+
             const statusInimigo = document.getElementById('status-inimigo');
             statusInimigo.innerHTML = '';
-            
+
             const i = jogo.inimigo;
             if (i && i.status) {
                 if (i.status.veneno > 0) {
@@ -938,7 +931,7 @@
         function atualizarInventarioDisplay() {
             const inventarioDiv = document.getElementById('inventario-display');
             inventarioDiv.innerHTML = '';
-            
+
             let temItens = false;
             for (let [item, quantidade] of Object.entries(jogo.heroi.inventario)) {
                 if (quantidade > 0) {
@@ -951,7 +944,7 @@
                     inventarioDiv.appendChild(itemDiv);
                 }
             }
-            
+
             if (!temItens) {
                 const emptyDiv = document.createElement('div');
                 emptyDiv.className = 'item-inventario';
@@ -963,13 +956,11 @@
         function atualizarLoja() {
             const lojaDiv = document.getElementById('lista-loja');
             lojaDiv.innerHTML = '';
-            
+
             CONSUMIVEIS.forEach(item => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'item-loja';
-                
                 const podeComprar = jogo.heroi.ouro >= item.preco;
-                
                 itemDiv.innerHTML = `
                     <div class="item-info">
                         <div class="item-nome">${item.nome}</div>
@@ -982,7 +973,6 @@
                         </button>
                     </div>
                 `;
-                
                 lojaDiv.appendChild(itemDiv);
             });
         }
@@ -996,24 +986,21 @@
         function comprarItem(itemId) {
             const item = CONSUMIVEIS.find(c => c.id === itemId);
             if (!item || jogo.heroi.ouro < item.preco) return;
-            
             jogo.heroi.ouro -= item.preco;
             jogo.heroi.inventario[itemId]++;
-            
             atualizarCidade();
             alert(`${item.nome} comprado com sucesso!`);
         }
 
         function selecionarInimigo() {
             const h = jogo.heroi;
-            // Verificar se é hora de um boss (a cada 7 vitórias)
             if (h.vitoriasSdeBoss >= 7 && Math.random() < 0.7) {
                 return selecionarBoss();
             }
 
             const totalPeso = MONSTROS.reduce((sum, m) => sum + m.peso, 0);
             let r = Math.random() * totalPeso;
-            
+
             for (let m of MONSTROS) {
                 if (r < m.peso) {
                     const inimigo = JSON.parse(JSON.stringify(m));
@@ -1023,8 +1010,7 @@
                 }
                 r -= m.peso;
             }
-            
-            // Fallback para o primeiro monstro
+
             const fallback = JSON.parse(JSON.stringify(MONSTROS[0]));
             fallback.hp = fallback.hpMax;
             fallback.status = { veneno: 0, paralisia: 0 };
@@ -1045,7 +1031,6 @@
         }
 
         function processarStatus() {
-            // Status do herói
             const h = jogo.heroi;
             if (h.status.veneno > 0) {
                 const dano = 3;
@@ -1054,12 +1039,11 @@
                 log(`🟢 Veneno causou ${dano} de dano no herói!`, '#ff6666');
                 h.status.veneno--;
             }
-            
+
             if (h.status.forcaBuff > 0) h.status.forcaBuff--;
             if (h.status.defesaBuff > 0) h.status.defesaBuff--;
             if (h.status.paralisia > 0) h.status.paralisia--;
-            
-            // Status do inimigo
+
             const i = jogo.inimigo;
             if (i && i.status) {
                 if (i.status.veneno > 0) {
@@ -1069,15 +1053,14 @@
                     log(`🟢 Veneno causou ${dano} de dano no ${i.nome}!`, '#ff6666');
                     i.status.veneno--;
                 }
-                
                 if (i.status.paralisia > 0) i.status.paralisia--;
             }
         }
 
         function aplicarStatusPorMonstro(inimigo, alvo) {
             if (!inimigo.inflict) return;
-            
-            if (Math.random() < 0.3) { // 30% chance
+
+            if (Math.random() < 0.3) {
                 if (inimigo.inflict === "veneno" && alvo.status.veneno === 0) {
                     alvo.status.veneno = 3;
                     log(`🟢 ${alvo === jogo.heroi ? "Herói" : "Inimigo"} foi envenenado!`, '#ffff00');
@@ -1089,7 +1072,6 @@
             }
         }
 
-        // Ações do jogo
         function recuperar() {
             const h = jogo.heroi;
             if (h.ouro >= CONFIG.custoRecuperacao && (h.hp < h.hpMax || h.mp < h.mpMax)) {
@@ -1105,9 +1087,9 @@
             jogo.inimigo = selecionarInimigo();
             jogo.batalhaAtiva = true;
             jogo.turnoDoJogador = true;
-            
+
             document.getElementById('battle-log').innerHTML = '';
-            
+
             if (jogo.inimigo.isBoss) {
                 log(`⚠️ ⚠️ ⚠️ ${jogo.inimigo.nome} apareceu! ⚠️ ⚠️ ⚠️`, '#ff0000');
                 log(`💀 Um encontro com um CHEFE LENDÁRIO!`, '#ff6666');
@@ -1117,43 +1099,33 @@
                 log(`Um ${jogo.inimigo.nome} selvagem apareceu!`, '#00ffff');
                 log(`Você pode ganhar ${jogo.inimigo.tesouro} moedas de ouro!`, '#ffd700');
             }
-            
+
             irParaBatalha();
         }
 
         function atacar() {
             if (!jogo.turnoDoJogador || !jogo.batalhaAtiva) return;
-            
+
             const h = jogo.heroi;
             const i = jogo.inimigo;
-            
-            // Verificar paralisia do herói
+
             if (h.status.paralisia > 0 && Math.random() < 0.3) {
                 log('Você está paralisado e perdeu o turno!', '#ff9800');
                 processarStatus();
                 atualizarBatalha();
-                
-                if (h.hp <= 0) {
-                    derrota();
-                    return;
-                }
-                if (i.hp <= 0) {
-                    vitoria();
-                    return;
-                }
-                
+
+                if (h.hp <= 0) { derrota(); return; }
+                if (i.hp <= 0) { vitoria(); return; }
+
                 setTimeout(turnoInimigo, 1500);
                 return;
             }
-            
+
             if (Math.random() * 100 < chanceAcerto(h.agilidade, i.agilidade)) {
-                let dano = h.dano - Math.floor(i.defesa / 2);
-                
-                // Aplicar buff de força
-                if (h.status.forcaBuff > 0) {
-                    dano += 5;
-                }
-                
+                // FIX(combat): dano do ataque normal agora usa forca do herói (h.dano fixo foi removido)
+                let dano = random(CONFIG.danoHeroiMin, CONFIG.danoHeroiMax) + Math.floor(h.forca / 2);
+                dano -= Math.floor(i.defesa / 2);
+                if (h.status.forcaBuff > 0) dano += 5;
                 if (dano < 1) dano = 1;
                 i.hp -= dano;
                 if (i.hp < 0) i.hp = 0;
@@ -1161,69 +1133,58 @@
             } else {
                 log('Você errou o ataque!', '#ff9800');
             }
-            
+
             processarStatus();
             atualizarBatalha();
-            
-            if (i.hp <= 0) {
-                vitoria();
-                return;
-            }
-            if (h.hp <= 0) {
-                derrota();
-                return;
-            }
-            
+
+            if (i.hp <= 0) { vitoria(); return; }
+            if (h.hp <= 0) { derrota(); return; }
+
             jogo.turnoDoJogador = false;
             setTimeout(turnoInimigo, 1500);
         }
 
         function turnoInimigo() {
             if (!jogo.batalhaAtiva) return;
-            
+
             const h = jogo.heroi;
             const i = jogo.inimigo;
-            
-            // Verificar paralisia do inimigo
+
             if (i.status && i.status.paralisia > 0 && Math.random() < 0.3) {
                 log(`${i.nome} está paralisado e perdeu o turno!`, '#ff9800');
                 jogo.turnoDoJogador = true;
                 atualizarBatalha();
                 return;
             }
-            
+
             if (Math.random() * 100 < chanceAcerto(i.agilidade, h.agilidade)) {
                 let dano = i.forca - Math.floor((h.defesa + (h.status.defesaBuff > 0 ? 5 : 0)) / 2);
                 if (dano < 1) dano = 1;
                 h.hp -= dano;
                 if (h.hp < 0) h.hp = 0;
                 log(`💥 ${i.nome} acertou e causou ${dano} de dano!`, '#f44336');
-                
-                // Aplicar status especial do monstro (CORREÇÃO DO BUG)
                 aplicarStatusPorMonstro(i, h);
             } else {
                 log(`${i.nome} errou o ataque!`, '#ff9800');
             }
-            
+
             jogo.turnoDoJogador = true;
             atualizarBatalha();
-            
-            if (h.hp <= 0) {
-                derrota();
-            }
+
+            if (h.hp <= 0) derrota();
         }
 
         function mostrarConsumiveis() {
             const itensDisponiveis = Object.entries(jogo.heroi.inventario).filter(([item, qtd]) => qtd > 0);
-            
+
             if (itensDisponiveis.length === 0) {
                 alert("Nenhum item disponível!");
                 return;
             }
-            
+
             const listaDiv = document.getElementById('lista-consumiveis');
             listaDiv.innerHTML = '';
-            
+
             itensDisponiveis.forEach(([itemId, quantidade]) => {
                 const item = CONSUMIVEIS.find(c => c.id === itemId);
                 if (item) {
@@ -1239,24 +1200,23 @@
                     listaDiv.appendChild(itemDiv);
                 }
             });
-            
+
             document.getElementById('modal-consumiveis').style.display = 'flex';
         }
 
         function usarItem(itemId) {
             const h = jogo.heroi;
             if (h.inventario[itemId] <= 0) return;
-            
+
             h.inventario[itemId]--;
             const item = CONSUMIVEIS.find(c => c.id === itemId);
-            
+
             log(`🧪 Você usou ${item.nome}!`, '#2196f3');
-            
+
             switch(itemId) {
                 case "pocao":
                     const cura = 30;
-                    h.hp += cura;
-                    if (h.hp > h.hpMax) h.hp = h.hpMax;
+                    h.hp = Math.min(h.hpMax, h.hp + cura);
                     log(`💚 Você recuperou ${cura} HP!`, '#4caf50');
                     break;
                 case "antidoto":
@@ -1273,21 +1233,14 @@
                     log(`🛡️ Sua defesa aumentou por 5 turnos!`, '#4caf50');
                     break;
             }
-            
+
             fecharConsumiveis();
             processarStatus();
             atualizarBatalha();
-            
-            if (h.hp <= 0) {
-                derrota();
-                return;
-            }
-            if (jogo.inimigo.hp <= 0) {
-                vitoria();
-                return;
-            }
-            
-            // Turno do inimigo após usar item
+
+            if (h.hp <= 0) { derrota(); return; }
+            if (jogo.inimigo.hp <= 0) { vitoria(); return; }
+
             jogo.turnoDoJogador = false;
             setTimeout(turnoInimigo, 1000);
         }
@@ -1305,35 +1258,36 @@
         function vitoria() {
             const h = jogo.heroi;
             const i = jogo.inimigo;
-            
+
             jogo.batalhaAtiva = false;
-            
-            // Recuperar um pouco de MP na vitória
+
             h.mp = Math.min(h.mpMax, h.mp + 5);
             log(`✨ Você recuperou 5 MP pela vitória!`, '#9b59b6');
-            
+
             let xpGanho = CONFIG.xpPorVitoria;
             if (i.isBoss) {
                 xpGanho += i.xpBonus;
                 log(`🎉 🎉 VOCÊ DERROTOU O CHEFE! 🎉 🎉`, '#ffff00');
                 log(`${i.nome} foi vencido!`, '#4caf50');
-                h.vitoriasSdeBoss = 0; // Reset o contador de vitórias para o próximo boss
+                h.vitoriasSdeBoss = 0;
             } else {
                 log(`🎉 Você derrotou o ${i.nome}!`, '#4caf50');
                 h.vitoriasSdeBoss++;
             }
-            
+
             log(`💰 Você ganhou ${i.tesouro} moedas de ouro!`, '#ffd700');
             log(`✨ Você ganhou ${xpGanho} XP!`, '#2196f3');
-            
+
             h.vitorias++;
             h.ouro += i.tesouro;
             h.xp += xpGanho;
             h.xpTotal += xpGanho;
-            
+
             if (h.xp >= h.xpProx) {
                 h.nivel++;
                 h.xp = 0;
+                // FIX(levelup): hpMax agora cresce a cada nível (estava fixo em 50 para sempre)
+                h.hpMax += CONFIG.hpBonusPorNivel;
                 h.mpMax += 5;
                 h.hp = h.hpMax;
                 h.mp = h.mpMax;
@@ -1341,8 +1295,7 @@
                 h.defesa += 1;
                 h.agilidade += 1;
                 h.xpProx = h.nivel * 100;
-                
-                // Desbloquear novas habilidades
+
                 if (h.nivel === 3) {
                     h.habilidades.push("cura_rapida");
                     log(`✨ Nova Habilidade: Cura Rápida!`, '#9b59b6');
@@ -1353,11 +1306,10 @@
                     h.habilidades.push("furia_berzerker");
                     log(`✨ Nova Habilidade: Fúria Berzerker!`, '#9b59b6');
                 }
-                
-                // Limpar status negativos no level up
+
                 h.status.veneno = 0;
                 h.status.paralisia = 0;
-                
+
                 setTimeout(mostrarLevelUp, 1500);
             } else {
                 setTimeout(fimBatalha, 2000);
@@ -1367,7 +1319,7 @@
         function derrota() {
             const h = jogo.heroi;
             const i = jogo.inimigo;
-            
+
             jogo.batalhaAtiva = false;
             log(`💀 Você foi derrotado pelo ${i.nome}!`, '#f44336');
             h.derrotas++;
@@ -1375,10 +1327,8 @@
         }
 
         function fimBatalha() {
-            // Limpar status negativos ao voltar para cidade
             jogo.heroi.status.veneno = 0;
             jogo.heroi.status.paralisia = 0;
-            
             irParaCidade();
         }
 
@@ -1403,23 +1353,26 @@
         }
 
         function reiniciarJogo() {
+            // FIX(init): reiniciarJogo agora inclui mpMax e habilidades que estavam ausentes
             jogo = {
                 heroi: {
                     nome: "Herói",
                     nivel: 1,
                     hpMax: 50,
                     hp: 50,
+                    mpMax: 20,
+                    mp: 20,
                     xp: 0,
                     xpProx: 100,
                     ouro: 100,
                     forca: 10,
                     defesa: 5,
                     agilidade: 5,
-                    dano: 15,
                     vitorias: 0,
                     derrotas: 0,
                     xpTotal: 0,
                     vitoriasSdeBoss: 0,
+                    habilidades: ["golpe_forte"],
                     status: {
                         veneno: 0,
                         paralisia: 0,
@@ -1437,7 +1390,7 @@
                 turnoDoJogador: true,
                 batalhaAtiva: false
             };
-            
+
             document.getElementById('modal-gameover').style.display = 'none';
             irParaCidade();
         }
@@ -1467,22 +1420,29 @@
                     return false;
                 }
                 const dados = JSON.parse(saveData);
+
+                // FIX(save): retrocompatibilidade aplicada antes de atribuir ao jogo
+                if (dados.heroi.mp === undefined) {
+                    dados.heroi.mp = 20;
+                    dados.heroi.mpMax = 20;
+                }
+                if (dados.heroi.habilidades === undefined) {
+                    dados.heroi.habilidades = ["golpe_forte"];
+                }
+                if (dados.heroi.vitoriasSdeBoss === undefined) {
+                    dados.heroi.vitoriasSdeBoss = 0;
+                }
+
                 jogo.heroi = dados.heroi;
                 jogo.inimigo = null;
                 jogo.turnoDoJogador = true;
                 jogo.batalhaAtiva = false;
+
                 atualizarCidade();
                 const dataFormatada = new Date(dados.timestamp).toLocaleString('pt-BR');
                 document.getElementById('save-status').textContent = `✅ Jogo carregado! (Salvo em ${dataFormatada})`;
                 document.getElementById('save-status').style.color = '#27ae60';
 
-                // Garantir que MP existe (retrocompatibilidade)
-                if (jogo.heroi.mp === undefined) {
-                    jogo.heroi.mp = 20;
-                    jogo.heroi.mpMax = 20;
-                    jogo.heroi.habilidades = ["golpe_forte"];
-                }
-                
                 return true;
             } catch (e) {
                 document.getElementById('save-status').textContent = '❌ Erro ao carregar o jogo!';
