@@ -12,12 +12,14 @@ const CONFIG_SIMULACAO = {
     salvarLogDetalhado: false
 };
 
-// Dados do jogo (copiados da versão atual)
+// Dados do jogo (copiados da versão atual de index.html)
 const HEROI_INICIAL = {
     nome: "Herói Teste",
     nivel: 1,
     hpMax: 50,
     hp: 50,
+    mpMax: 20,
+    mp: 20,
     xp: 0,
     xpProx: 100,
     ouro: 100,
@@ -28,43 +30,109 @@ const HEROI_INICIAL = {
     vitorias: 0,
     derrotas: 0,
     xpTotal: 0,
-    status: { veneno: 0, paralisia: 0, forcaBuff: 0, defesaBuff: 0 },
-    inventario: { pocao: 2, antidoto: 1, pocaoForca: 0, pocaoDefesa: 0 }
+    vitoriasSdeBoss: 0,
+    habilidades: ["golpe_forte"],
+    status: {
+        veneno: 0,
+        paralisia: 0,
+        forcaBuff: 0,
+        defesaBuff: 0
+    },
+    inventario: {
+        pocao: 2,
+        antidoto: 1,
+        pocaoForca: 0,
+        pocaoDefesa: 0
+    }
+};
+
+const CONFIG_GAME = { // Using data from index.html's CONFIG
+    danoHeroiMin: 10,
+    danoHeroiMax: 20,
+    danoInimigoMin: 5,
+    danoInimigoMax: 15,
+    hpInimigoMin: 20,
+    hpInimigoMax: 40,
+    xpPorVitoria: 50,
+    hpBonusPorNivel: 10,
+    custoRecuperacao: 50
 };
 
 const CONSUMIVEIS_LOJA = [
-    {nome: "Poção de Cura", id: "pocao", preco: 30, descricao: "Restaura 30 HP"},
-    {nome: "Antídoto", id: "antidoto", preco: 20, descricao: "Remove veneno e paralisia"},
-    {nome: "Poção de Força", id: "pocaoForca", preco: 50, descricao: "Aumenta ataque por 5 turnos"},
-    {nome: "Poção de Defesa", id: "pocaoDefesa", preco: 40, descricao: "Aumenta defesa por 5 turnos"}
+    { id: "pocao", nome: "Poção de Cura", preco: 30, descricao: "Restaura 30 HP" },
+    { id: "antidoto", nome: "Antídoto", preco: 20, descricao: "Remove veneno e paralisia" },
+    { id: "pocaoForca", nome: "Poção de Força", preco: 50, descricao: "Aumenta ataque por 5 turnos" },
+    { id: "pocaoDefesa", nome: "Poção de Defesa", preco: 40, descricao: "Aumenta defesa por 5 turnos" }
 ];
 
 const MONSTROS = [
-    {nome: "Slime", hpMax: 20, forca: 5, defesa: 2, agilidade: 3, peso: 40, tesouro: 10},
-    {nome: "Rato Gigante", hpMax: 18, forca: 4, defesa: 1, agilidade: 5, peso: 38, tesouro: 8},
-    {nome: "Morcego Sombrio", hpMax: 16, forca: 5, defesa: 1, agilidade: 7, peso: 35, tesouro: 9},
-    {nome: "Abelha Assassina", hpMax: 14, forca: 6, defesa: 1, agilidade: 9, peso: 34, tesouro: 10, status: "veneno"},
-    {nome: "Goblin", hpMax: 22, forca: 6, defesa: 2, agilidade: 4, peso: 32, tesouro: 12},
-    {nome: "Lobo", hpMax: 30, forca: 8, defesa: 4, agilidade: 6, peso: 25, tesouro: 15},
-    {nome: "Gnoll", hpMax: 28, forca: 9, defesa: 3, agilidade: 5, peso: 24, tesouro: 16},
-    {nome: "Kobold", hpMax: 26, forca: 8, defesa: 3, agilidade: 7, peso: 23, tesouro: 14},
-    {nome: "Zumbi", hpMax: 35, forca: 7, defesa: 5, agilidade: 2, peso: 22, tesouro: 18, status: "paralisia"},
-    {nome: "Esqueleto Soldado", hpMax: 32, forca: 8, defesa: 4, agilidade: 3, peso: 21, tesouro: 17},
-    {nome: "Orc", hpMax: 45, forca: 12, defesa: 6, agilidade: 4, peso: 20, tesouro: 25},
-    {nome: "Lançador de Rocha", hpMax: 50, forca: 11, defesa: 7, agilidade: 3, peso: 18, tesouro: 28},
-    {nome: "Arqueiro Bandido", hpMax: 40, forca: 9, defesa: 5, agilidade: 8, peso: 18, tesouro: 26},
-    {nome: "Aranha Gigante", hpMax: 38, forca: 10, defesa: 4, agilidade: 7, peso: 17, tesouro: 22, status: "veneno"},
-    {nome: "Troglodita", hpMax: 48, forca: 11, defesa: 6, agilidade: 5, peso: 16, tesouro: 24},
-    {nome: "Cavaleiro Negro", hpMax: 60, forca: 15, defesa: 10, agilidade: 7, peso: 10, tesouro: 40},
-    {nome: "Minotauro", hpMax: 65, forca: 17, defesa: 9, agilidade: 6, peso: 9, tesouro: 45},
-    {nome: "Homem Urso", hpMax: 62, forca: 16, defesa: 8, agilidade: 5, peso: 8, tesouro: 42},
-    {nome: "Gárgula Viva", hpMax: 55, forca: 14, defesa: 12, agilidade: 4, peso: 8, tesouro: 38, status: "paralisia"},
-    {nome: "Elemental de Terra", hpMax: 70, forca: 18, defesa: 14, agilidade: 3, peso: 7, tesouro: 50},
-    {nome: "Dragão Jovem", hpMax: 80, forca: 20, defesa: 12, agilidade: 8, peso: 5, tesouro: 80},
-    {nome: "Quimera", hpMax: 85, forca: 21, defesa: 13, agilidade: 7, peso: 4, tesouro: 85, status: "veneno"},
-    {nome: "Hidra Menor", hpMax: 90, forca: 22, defesa: 14, agilidade: 6, peso: 3, tesouro: 90},
-    {nome: "Dragão Ancião", hpMax: 100, forca: 25, defesa: 15, agilidade: 9, peso: 2, tesouro: 120},
-    {nome: "Demônio de Fogo", hpMax: 95, forca: 23, defesa: 13, agilidade: 8, peso: 2, tesouro: 100, status: "paralisia"}
+    // Fracos (mais comuns)
+    { nome: "Slime", hpMax: 20, forca: 6, defesa: 2, agilidade: 3, peso: 45, tesouro: 8 },
+    { nome: "Rato Gigante", hpMax: 18, forca: 5, defesa: 1, agilidade: 5, peso: 44, tesouro: 6 },
+    { nome: "Morcego Sombrio", hpMax: 16, forca: 6, defesa: 1, agilidade: 7, peso: 43, tesouro: 7, inflict: "veneno" },
+    { nome: "Abelha Assassina", hpMax: 14, forca: 7, defesa: 1, agilidade: 9, peso: 42, tesouro: 8, inflict: "veneno" },
+    { nome: "Goblin", hpMax: 22, forca: 7, defesa: 2, agilidade: 4, peso: 41, tesouro: 10 },
+    { nome: "Sapinho Tóxico", hpMax: 20, forca: 6, defesa: 2, agilidade: 4, peso: 40, tesouro: 9, inflict: "veneno" },
+    { nome: "Enguia Elétrica", hpMax: 21, forca: 6, defesa: 2, agilidade: 6, peso: 39, tesouro: 10, inflict: "paralisia" },
+    { nome: "Esquilo Pirata", hpMax: 19, forca: 6, defesa: 2, agilidade: 7, peso: 38, tesouro: 7 },
+    { nome: "Lesma Ácida", hpMax: 23, forca: 7, defesa: 1, agilidade: 2, peso: 37, tesouro: 11, inflict: "veneno" },
+    { nome: "Planta Mordente", hpMax: 25, forca: 8, defesa: 3, agilidade: 2, peso: 36, tesouro: 12 },
+
+    // Pouco fortes
+    { nome: "Lobo", hpMax: 30, forca: 9, defesa: 4, agilidade: 6, peso: 30, tesouro: 15 },
+    { nome: "Gnoll", hpMax: 28, forca: 10, defesa: 3, agilidade: 5, peso: 29, tesouro: 16 },
+    { nome: "Kobold", hpMax: 26, forca: 9, defesa: 3, agilidade: 7, peso: 28, tesouro: 14 },
+    { nome: "Zumbi", hpMax: 35, forca: 8, defesa: 5, agilidade: 2, peso: 27, tesouro: 18, inflict: "paralisia" },
+    { nome: "Esqueleto Soldado", hpMax: 32, forca: 9, defesa: 4, agilidade: 3, peso: 26, tesouro: 17 },
+    { nome: "Bárbaro Errante", hpMax: 34, forca: 10, defesa: 4, agilidade: 4, peso: 25, tesouro: 18 },
+    { nome: "Cão Infernal", hpMax: 31, forca: 11, defesa: 3, agilidade: 6, peso: 24, tesouro: 17, inflict: "veneno" },
+    { nome: "Aranha Cinza", hpMax: 29, forca: 9, defesa: 3, agilidade: 7, peso: 23, tesouro: 16, inflict: "veneno" },
+    { nome: "Bandido", hpMax: 33, forca: 10, defesa: 4, agilidade: 6, peso: 22, tesouro: 18 },
+    { nome: "Guarda Rebelde", hpMax: 36, forca: 11, defesa: 5, agilidade: 3, peso: 21, tesouro: 19 },
+
+    // Médios
+    { nome: "Orc", hpMax: 45, forca: 12, defesa: 6, agilidade: 4, peso: 18, tesouro: 25 },
+    { nome: "Lançador de Rocha", hpMax: 50, forca: 11, defesa: 7, agilidade: 3, peso: 17, tesouro: 28 },
+    { nome: "Arqueiro Bandido", hpMax: 40, forca: 9, defesa: 5, agilidade: 8, peso: 17, tesouro: 26 },
+    { nome: "Aranha Gigante", hpMax: 38, forca: 10, defesa: 4, agilidade: 7, peso: 16, tesouro: 22, inflict: "veneno" },
+    { nome: "Troglodita", hpMax: 48, forca: 11, defesa: 6, agilidade: 5, peso: 15, tesouro: 24 },
+    { nome: "Centauro", hpMax: 46, forca: 12, defesa: 5, agilidade: 7, peso: 14, tesouro: 26 },
+    { nome: "Mago das Sombras", hpMax: 42, forca: 13, defesa: 4, agilidade: 8, peso: 13, tesouro: 30, inflict: "paralisia" },
+    { nome: "Ogro", hpMax: 52, forca: 14, defesa: 7, agilidade: 3, peso: 13, tesouro: 28 },
+    { nome: "Armadilha Viva", hpMax: 44, forca: 11, defesa: 8, agilidade: 4, peso: 12, tesouro: 25, inflict: "paralisia" },
+    { nome: "Besouro Titã", hpMax: 47, forca: 12, defesa: 9, agilidade: 3, peso: 12, tesouro: 27 },
+
+    // Fortes
+    { nome: "Cavaleiro Negro", hpMax: 60, forca: 15, defesa: 10, agilidade: 7, peso: 9, tesouro: 40 },
+    { nome: "Minotauro", hpMax: 65, forca: 17, defesa: 9, agilidade: 6, peso: 8, tesouro: 45 },
+    { nome: "Homem Urso", hpMax: 62, forca: 16, defesa: 8, agilidade: 5, peso: 8, tesouro: 42 },
+    { nome: "Gárgula Viva", hpMax: 55, forca: 14, defesa: 12, agilidade: 4, peso: 7, tesouro: 38, inflict: "paralisia" },
+    { nome: "Elemental de Terra", hpMax: 70, forca: 18, defesa: 14, agilidade: 3, peso: 7, tesouro: 50 },
+    { nome: "Assassino Sombrio", hpMax: 58, forca: 16, defesa: 8, agilidade: 9, peso: 6, tesouro: 44, inflict: "veneno" },
+    { nome: "Gigante de Gelo", hpMax: 75, forca: 19, defesa: 13, agilidade: 3, peso: 6, tesouro: 48 },
+    { nome: "Fênix Menor", hpMax: 60, forca: 15, defesa: 10, agilidade: 8, peso: 5, tesouro: 46 },
+    { nome: "Mantícora", hpMax: 80, forca: 20, defesa: 12, agilidade: 7, peso: 4, tesouro: 80, inflict: "veneno" },
+    { nome: "Lich Menor", hpMax: 68, forca: 18, defesa: 11, agilidade: 6, peso: 4, tesouro: 55, inflict: "paralisia" },
+
+    // Muito fortes (raros)
+    { nome: "Dragão Jovem", hpMax: 90, forca: 22, defesa: 14, agilidade: 8, peso: 3, tesouro: 90 },
+    { nome: "Quimera", hpMax: 85, forca: 21, defesa: 13, agilidade: 7, peso: 3, tesouro: 85, inflict: "veneno" },
+    { nome: "Hidra Menor", hpMax: 95, forca: 23, defesa: 14, agilidade: 6, peso: 3, tesouro: 95 },
+    { nome: "Demônio de Fogo", hpMax: 92, forca: 23, defesa: 13, agilidade: 8, peso: 2, tesouro: 100, inflict: "paralisia" },
+    { nome: "Titã Ancião", hpMax: 100, forca: 25, defesa: 15, agilidade: 5, peso: 2, tesouro: 120 },
+    { nome: "Dragão Ancião", hpMax: 110, forca: 27, defesa: 16, agilidade: 9, peso: 2, tesouro: 140 },
+    { nome: "Demônio Supremo", hpMax: 105, forca: 26, defesa: 15, agilidade: 8, peso: 1, tesouro: 130, inflict: "veneno" },
+    { nome: "Leviatã", hpMax: 115, forca: 28, defesa: 17, agilidade: 7, peso: 1, tesouro: 150, inflict: "paralisia" },
+    { nome: "Deus Sombrio", hpMax: 120, forca: 30, defesa: 18, agilidade: 10, peso: 1, tesouro: 200 }
+];
+
+const BOSSES = [
+    { nome: "🐉 Rei Dragão Antigo", hpMax: 150, forca: 28, defesa: 16, agilidade: 8, tesouro: 300, xpBonus: 200, inflict: "paralisia" },
+    { nome: "💀 Rainha Lich Suprema", hpMax: 130, forca: 26, defesa: 14, agilidade: 9, tesouro: 280, xpBonus: 180, inflict: "paralisia" },
+    { nome: "👹 Titã Gigante da Montanha", hpMax: 160, forca: 30, defesa: 18, agilidade: 6, tesouro: 320, xpBonus: 220 },
+    { nome: "🔥 Lorde dos Abismos Ardentes", hpMax: 140, forca: 29, defesa: 15, agilidade: 7, tesouro: 300, xpBonus: 200, inflict: "paralisia" },
+    { nome: "⚡ Imperador Elemental", hpMax: 135, forca: 27, defesa: 14, agilidade: 10, tesouro: 290, xpBonus: 190, inflict: "paralisia" },
+    { nome: "🗡️ Cavaleiro Sombrio Imortal", hpMax: 145, forca: 26, defesa: 19, agilidade: 8, tesouro: 310, xpBonus: 210 }
 ];
 
 // Estatísticas globais para análise
@@ -91,9 +159,16 @@ function criarHeroi() {
     return JSON.parse(JSON.stringify(HEROI_INICIAL));
 }
 
-function selecionarInimigo() {
+function seleccionarInimigo(heroi) {
+    const h = heroi; // usa o herói da partida em andamento para a lógica de boss
+    // Verificar se é hora de um boss (a cada 7 vitórias)
+    if (h.vitoriasSdeBoss >= 7 && Math.random() < 0.7) {
+        return seleccionarBoss();
+    }
+
     const totalPeso = MONSTROS.reduce((sum, m) => sum + m.peso, 0);
     let r = Math.random() * totalPeso;
+    
     for (let m of MONSTROS) {
         if (r < m.peso) {
             const inimigo = JSON.parse(JSON.stringify(m));
@@ -103,11 +178,24 @@ function selecionarInimigo() {
         }
         r -= m.peso;
     }
-    return JSON.parse(JSON.stringify(MONSTROS[0]));
+    
+    // Fallback para o primeiro monstro
+    const fallback = JSON.parse(JSON.stringify(MONSTROS[0]));
+    fallback.hp = fallback.hpMax;
+    fallback.status = { veneno: 0, paralisia: 0 };
+    return fallback;
 }
 
-function chanceAcerto(agilAtacante, agilDefensor) {
-    let chance = 75 + (agilAtacante - agilDefensor) * 3;
+function seleccionarBoss() {
+    const boss = JSON.parse(JSON.stringify(BOSSES[Math.floor(Math.random() * BOSSES.length)]));
+    boss.hp = boss.hpMax;
+    boss.status = { veneno: 0, paralisia: 0 };
+    boss.isBoss = true;
+    return boss;
+}
+
+function chanceAcerto(agilAtacante, agilDefensor, bonusForca = 0) {
+    let chance = 75 + (agilAtacante - agilDefensor) * 3 + bonusForca;
     return Math.max(20, Math.min(95, chance));
 }
 
@@ -168,20 +256,20 @@ function iaUsarItem(heroi, inimigo) {
 
 function comprarItensIA(heroi) {
     // IA simples para comprar itens
-    while (heroi.ouro >= 30 && heroi.inventario.pocao < 5) {
-        heroi.ouro -= 30;
+    while (heroi.ouro >= CONSUMIVEIS_LOJA.find(c => c.id === "pocao").preco && heroi.inventario.pocao < 5) {
+        heroi.ouro -= CONSUMIVEIS_LOJA.find(c => c.id === "pocao").preco;
         heroi.inventario.pocao++;
     }
-    while (heroi.ouro >= 20 && heroi.inventario.antidoto < 3) {
-        heroi.ouro -= 20;
+    while (heroi.ouro >= CONSUMIVEIS_LOJA.find(c => c.id === "antidoto").preco && heroi.inventario.antidoto < 3) {
+        heroi.ouro -= CONSUMIVEIS_LOJA.find(c => c.id === "antidoto").preco;
         heroi.inventario.antidoto++;
     }
-    if (heroi.ouro >= 50 && heroi.inventario.pocaoForca < 2) {
-        heroi.ouro -= 50;
+    if (heroi.ouro >= CONSUMIVEIS_LOJA.find(c => c.id === "pocaoForca").preco && heroi.inventario.pocaoForca < 2) {
+        heroi.ouro -= CONSUMIVEIS_LOJA.find(c => c.id === "pocaoForca").preco;
         heroi.inventario.pocaoForca++;
     }
-    if (heroi.ouro >= 40 && heroi.inventario.pocaoDefesa < 2) {
-        heroi.ouro -= 40;
+    if (heroi.ouro >= CONSUMIVEIS_LOJA.find(c => c.id === "pocaoDefesa").preco && heroi.inventario.pocaoDefesa < 2) {
+        heroi.ouro -= CONSUMIVEIS_LOJA.find(c => c.id === "pocaoDefesa").preco;
         heroi.inventario.pocaoDefesa++;
     }
 }
@@ -195,7 +283,7 @@ function simularBatalha(heroi, inimigo) {
         turnos++;
         
         // Turno do herói
-        if (heroi.status.paralisia > 0 && Math.random() < 0.3) {
+        if (heroi.status.paralisia > 0 && Math.random() < 0.6) {
             log.push(`Turno ${turnos}: Herói paralisado, perdeu o turno`);
         } else {
             // IA decide se usar item primeiro
@@ -203,7 +291,7 @@ function simularBatalha(heroi, inimigo) {
                 log.push(`Turno ${turnos}: Herói usou item`);
             } else {
                 // Atacar
-                if (Math.random() * 100 < chanceAcerto(heroi.agilidade, inimigo.agilidade)) {
+                if (Math.random() * 100 < chanceAcerto(heroi.agilidade, inimigo.agilidade, Math.floor(heroi.forca / 2))) {
                     let dano = heroi.dano - Math.floor(inimigo.defesa / 2);
                     if (heroi.status.forcaBuff > 0) dano += 5;
                     dano = Math.max(1, dano);
@@ -222,7 +310,7 @@ function simularBatalha(heroi, inimigo) {
         if (inimigo.hp <= 0) break;
         
         // Turno do inimigo
-        if (inimigo.status.paralisia > 0 && Math.random() < 0.3) {
+        if (inimigo.status.paralisia > 0 && Math.random() < 0.6) {
             log.push(`Turno ${turnos}: ${inimigo.nome} paralisado, perdeu o turno`);
         } else {
             if (Math.random() * 100 < chanceAcerto(inimigo.agilidade, heroi.agilidade)) {
@@ -232,11 +320,11 @@ function simularBatalha(heroi, inimigo) {
                 log.push(`Turno ${turnos}: ${inimigo.nome} acertou por ${dano} dano`);
                 
                 // Aplicar status especial do monstro
-                if (inimigo.status && Math.random() < 0.3) {
-                    if (inimigo.status === "veneno" && heroi.status.veneno === 0) {
+                if (inimigo.inflict && Math.random() < 0.3) {
+                    if (inimigo.inflict === "veneno" && heroi.status.veneno === 0) {
                         heroi.status.veneno = 3;
                         log.push(`Turno ${turnos}: Herói foi envenenado!`);
-                    } else if (inimigo.status === "paralisia" && heroi.status.paralisia === 0) {
+                    } else if (inimigo.inflict === "paralisia" && heroi.status.paralisia === 0) {
                         heroi.status.paralisia = 2;
                         log.push(`Turno ${turnos}: Herói foi paralisado!`);
                     }
@@ -269,13 +357,13 @@ function simularJogoCompleto() {
         comprarItensIA(heroi);
         
         // Recuperar HP se necessário e tiver ouro
-        if (heroi.hp < heroi.hpMax * 0.7 && heroi.ouro >= 20) {
-            heroi.ouro -= 20;
+        if (heroi.hp < heroi.hpMax * 0.7 && heroi.ouro >= CONFIG_GAME.custoRecuperacao) {
+            heroi.ouro -= CONFIG_GAME.custoRecuperacao;
             heroi.hp = heroi.hpMax;
         }
         
         // Iniciar batalha
-        const inimigo = selecionarInimigo();
+        const inimigo = seleccionarInimigo(heroi);
         const resultadoBatalha = simularBatalha(heroi, inimigo);
         
         logJogo.push({
@@ -292,14 +380,23 @@ function simularJogoCompleto() {
             batalhasVencidas++;
             heroi.vitorias++;
             heroi.ouro += inimigo.tesouro;
-            heroi.xp += 50;
-            heroi.xpTotal += 50;
-            
+
+            // Recompensa de XP (bosses dão bônus) e contador de boss
+            let xpGanho = CONFIG_GAME.xpPorVitoria;
+            if (inimigo.isBoss) {
+                xpGanho += inimigo.xpBonus;
+                heroi.vitoriasSdeBoss = 1;
+            } else {
+                heroi.vitoriasSdeBoss++;
+            }
+            heroi.xp += xpGanho;
+            heroi.xpTotal += xpGanho;
+
             // Verificar level up
             if (heroi.xp >= heroi.xpProx) {
                 heroi.nivel++;
                 heroi.xp = 0;
-                heroi.hpMax += 10;
+                heroi.hpMax += CONFIG_GAME.hpBonusPorNivel;
                 heroi.hp = heroi.hpMax;
                 heroi.forca += 2;
                 heroi.defesa += 1;
@@ -462,3 +559,5 @@ function executarSimulacao() {
 console.log("📋 Script de teste carregado!");
 console.log("💡 Para executar a simulação, digite: executarSimulacao()");
 console.log("⚙️ Para ajustar configurações, modifique CONFIG_SIMULACAO");
+
+executarSimulacao();
