@@ -564,6 +564,7 @@
                 forca: 10,
                 defesa: 5,
                 agilidade: 5,
+                dano: 15,
                 vitorias: 0,
                 derrotas: 0,
                 xpTotal: 0,
@@ -1033,8 +1034,8 @@
             return boss;
         }
 
-        function chanceAcerto(agilAtacante, agilDefensor) {
-            let chance = 75 + (agilAtacante - agilDefensor) * 3;
+        function chanceAcerto(agilAtacante, agilDefensor, bonusForca = 0) {
+            let chance = 75 + (agilAtacante - agilDefensor) * 3 + bonusForca;
             return Math.max(20, Math.min(95, chance));
         }
 
@@ -1130,10 +1131,8 @@
                 return;
             }
 
-            if (Math.random() * 100 < chanceAcerto(h.agilidade, i.agilidade)) {
-                // FIX(combat): dano do ataque normal agora usa forca do herói (h.dano fixo foi removido)
-                let dano = random(CONFIG.danoHeroiMin, CONFIG.danoHeroiMax) + Math.floor(h.forca / 2);
-                dano -= Math.floor(i.defesa / 2);
+            if (Math.random() * 100 < chanceAcerto(h.agilidade, i.agilidade, Math.floor(h.forca / 2))) {
+                let dano = h.dano - Math.floor(i.defesa / 2);
                 if (h.status.forcaBuff > 0) dano += 5;
                 if (dano < 1) dano = 1;
                 i.hp -= dano;
@@ -1382,6 +1381,7 @@
                     forca: 10,
                     defesa: 5,
                     agilidade: 5,
+                    dano: 15,
                     vitorias: 0,
                     derrotas: 0,
                     xpTotal: 0,
