@@ -1261,6 +1261,10 @@
         }
 
         function fugir() {
+            if (jogo.inimigo && jogo.inimigo.isBoss) {
+                log('Você não pode fugir de um chefe!', '#ff9800');
+                return;
+            }
             log('Você fugiu da batalha!', '#2196f3');
             jogo.batalhaAtiva = false;
             setTimeout(fimBatalha, 1000);
@@ -1272,8 +1276,11 @@
 
             jogo.batalhaAtiva = false;
 
-            h.mp = Math.min(h.mpMax, h.mp + 5);
-            log(`✨ Você recuperou 5 MP pela vitória!`, '#9b59b6');
+            const mpRecuperado = Math.min(h.mpMax, h.mp + 5) - h.mp;
+            h.mp += mpRecuperado;
+            if (mpRecuperado > 0) {
+                log(`✨ Você recuperou ${mpRecuperado} MP pela vitória!`, '#9b59b6');
+            }
 
             let xpGanho = CONFIG.xpPorVitoria;
             if (i.isBoss) {
