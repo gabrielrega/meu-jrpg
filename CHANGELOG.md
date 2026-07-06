@@ -5,6 +5,13 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/);
 versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não lançado]
+### Adicionado
+- Arquivo `LICENSE` (MIT), que o README já citava.
+
+### Modificado
+- README atualizado: 50 monstros (em vez de "25+"), chefes, MP/habilidades,
+  salvar/carregar e script de simulação; autor preenchido.
+
 ### Removido
 - Arquivos de configuração do Replit (`.replit`, `replit.md`); o projeto
   vive no GitHub e roda abrindo o `index.html`.

@@ -11,13 +11,16 @@ O objetivo é oferecer diversão rápida com profundidade tática e progressão,
 ## ⚔️ Principais Funcionalidades
 
 - **Sistema de batalha por turnos** com chance de acerto baseada em atributos.
-- **25+ tipos de monstros**, cada um com atributos e efeitos especiais.
+- **50 tipos de monstros**, cada um com atributos e efeitos especiais.
+- **Chefes lendários** a cada 7 vitórias, com recompensas maiores (não dá para fugir!).
+- **Pontos de magia (MP)** e habilidades especiais desbloqueadas por nível.
 - **Sistema de status/debuffs:** veneno, paralisia, buffs de ataque e defesa.
 - **Inventário de consumíveis** e **loja de itens** na cidade.
 - **Economia de ouro:** ouro ganho em batalhas, usado para cura e compra de itens.
 - **Personalização do herói:** evolução de atributos a cada nível.
 - **Exibição completa de ficha do personagem** (atributos, inventário, histórico de vitórias/derrotas).
 - **Tela de fim de jogo** com estatísticas finais e opção de novo jogo.
+- **Salvar/carregar progresso** automaticamente via `localStorage`.
 - Layout responsivo ― funciona em desktop e mobile.
 - Projeto totalmente open source!
 
@@ -33,6 +36,7 @@ O objetivo é oferecer diversão rápida com profundidade tática e progressão,
 ## 🛠️ Estrutura de Código
 
 - **index.html**: Todo o jogo está aqui (HTML + CSS + JS)
+- **teste-balanceamento.js**: script de simulação para análise de dificuldade (`node teste-balanceamento.js`)
 - Modular, fácil de entender, ideal para aprendizagem e extensão.
 
 
@@ -47,8 +51,8 @@ O objetivo é oferecer diversão rápida com profundidade tática e progressão,
 ## 📢 Créditos e Licença
 
 - **Código:** livre para estudo, uso e modificação.
-- **Autor:** [Seu nome/usuário do GitHub]
-- **Licença:** MIT
+- **Autor:** [Gabriel Rega](https://github.com/gabrielrega)
+- **Licença:** [MIT](LICENSE)
 
 ***
 
