@@ -6,6 +6,10 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não lançado]
 ### Adicionado
+- Sistema de equipamentos: loja com 4 armas (+dano; tiers altos também
+  +força) e 4 armaduras (+defesa). Comprar equipa na hora e o item anterior
+  do slot é revendido por 50% do preço. Bônus exibidos na ficha; equipamento
+  entra no save (com retrocompatibilidade para saves antigos).
 - Arquivo `LICENSE` (MIT), que o README já citava.
 
 ### Modificado

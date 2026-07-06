@@ -405,6 +405,14 @@
                     <span class="ficha-valor" id="heroi-agilidade">5</span>
                 </div>
                 <div class="ficha-linha">
+                    <span class="ficha-label">Arma:</span>
+                    <span class="ficha-valor" id="heroi-arma">Nenhuma</span>
+                </div>
+                <div class="ficha-linha">
+                    <span class="ficha-label">Armadura:</span>
+                    <span class="ficha-valor" id="heroi-armadura">Nenhuma</span>
+                </div>
+                <div class="ficha-linha">
                     <span class="ficha-label">Vitórias:</span>
                     <span class="ficha-valor" id="heroi-vitorias">0</span>
                 </div>
@@ -422,6 +430,12 @@
             <div class="loja">
                 <h2>🛒 Loja de Consumíveis</h2>
                 <div id="lista-loja"></div>
+            </div>
+
+            <div class="loja">
+                <h2>🗡️ Loja de Equipamentos</h2>
+                <p class="item-desc" style="margin-bottom: 10px;">Ao comprar, o equipamento atual do mesmo tipo é revendido por metade do preço.</p>
+                <div id="lista-equipamentos"></div>
             </div>
             
             <div style="margin: 25px 0;">
@@ -570,6 +584,10 @@
                 xpTotal: 0,
                 vitoriasSdeBoss: 0,
                 habilidades: ["golpe_forte"],
+                equipamento: {
+                    arma: null,
+                    armadura: null
+                },
                 status: {
                     veneno: 0,
                     paralisia: 0,
@@ -607,6 +625,18 @@
             { id: "antidoto", nome: "Antídoto", preco: 20, descricao: "Remove veneno e paralisia" },
             { id: "pocaoForca", nome: "Poção de Força", preco: 50, descricao: "Aumenta ataque por 5 turnos" },
             { id: "pocaoDefesa", nome: "Poção de Defesa", preco: 40, descricao: "Aumenta defesa por 5 turnos" }
+        ];
+
+        // Lista de equipamentos (arma dá dano/força; armadura dá defesa)
+        const EQUIPAMENTOS = [
+            { id: "adaga", nome: "Adaga Enferrujada", tipo: "arma", preco: 60, dano: 3 },
+            { id: "espada_curta", nome: "Espada Curta", tipo: "arma", preco: 150, dano: 5 },
+            { id: "machado_guerra", nome: "Machado de Guerra", tipo: "arma", preco: 350, dano: 9, forca: 2 },
+            { id: "lamina_dragao", nome: "Lâmina do Dragão", tipo: "arma", preco: 800, dano: 15, forca: 4 },
+            { id: "couro", nome: "Armadura de Couro", tipo: "armadura", preco: 50, defesa: 3 },
+            { id: "cota_malha", nome: "Cota de Malha", tipo: "armadura", preco: 140, defesa: 5 },
+            { id: "placas", nome: "Armadura de Placas", tipo: "armadura", preco: 320, defesa: 9 },
+            { id: "escama_dragao", nome: "Escama de Dragão", tipo: "armadura", preco: 750, defesa: 13 }
         ];
 
         // Lista de Habilidades
@@ -694,6 +724,28 @@
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
+        // Equipamentos: bônus sempre derivados, sem mutar atributos base
+        function equipado(h, slot) {
+            return EQUIPAMENTOS.find(e => e.id === h.equipamento[slot]) || null;
+        }
+
+        function bonusEquip(h, attr) {
+            let total = 0;
+            for (const slot of ["arma", "armadura"]) {
+                const eq = equipado(h, slot);
+                if (eq && eq[attr]) total += eq[attr];
+            }
+            return total;
+        }
+
+        function danoTotal(h) { return h.dano + bonusEquip(h, "dano"); }
+        function forcaTotal(h) { return h.forca + bonusEquip(h, "forca"); }
+        function defesaTotal(h) { return h.defesa + bonusEquip(h, "defesa"); }
+
+        function textoAtributo(base, bonus) {
+            return bonus > 0 ? `${base + bonus} <span style="color: #27ae60;">(+${bonus})</span>` : `${base}`;
+        }
+
         function log(mensagem, cor = '#00ff00') {
             const container = document.getElementById('battle-log');
             const div = document.createElement('div');
@@ -744,9 +796,13 @@
             document.getElementById('heroi-max-mp').textContent = h.mpMax;
             document.getElementById('heroi-xp').textContent = h.xp;
             document.getElementById('heroi-xp-max').textContent = h.xpProx;
-            document.getElementById('heroi-forca').textContent = h.forca;
-            document.getElementById('heroi-defesa').textContent = h.defesa;
+            document.getElementById('heroi-forca').innerHTML = textoAtributo(h.forca, bonusEquip(h, "forca"));
+            document.getElementById('heroi-defesa').innerHTML = textoAtributo(h.defesa, bonusEquip(h, "defesa"));
             document.getElementById('heroi-agilidade').textContent = h.agilidade;
+            const arma = equipado(h, "arma");
+            const armadura = equipado(h, "armadura");
+            document.getElementById('heroi-arma').textContent = arma ? `${arma.nome} (${descricaoEquip(arma)})` : 'Nenhuma';
+            document.getElementById('heroi-armadura').textContent = armadura ? `${armadura.nome} (${descricaoEquip(armadura)})` : 'Nenhuma';
             document.getElementById('heroi-vitorias').textContent = h.vitorias;
             document.getElementById('heroi-derrotas').textContent = h.derrotas;
 
@@ -755,6 +811,7 @@
             atualizarBarraXP();
             atualizarInventarioDisplay();
             atualizarLoja();
+            atualizarLojaEquipamentos();
 
             const btnRecuperar = document.getElementById('btn-recuperar');
             const avisoOuro = document.getElementById('aviso-ouro');
@@ -859,7 +916,7 @@
             const i = jogo.inimigo;
 
             // FIX(combat): dano base agora usa forca do herói (igual ao ataque normal)
-            const danoBase = random(CONFIG.danoHeroiMin, CONFIG.danoHeroiMax) + Math.floor(h.forca / 2);
+            const danoBase = random(CONFIG.danoHeroiMin, CONFIG.danoHeroiMax) + Math.floor(forcaTotal(h) / 2);
 
             switch(habId) {
                 case "golpe_forte":
@@ -984,6 +1041,62 @@
                 `;
                 lojaDiv.appendChild(itemDiv);
             });
+        }
+
+        function descricaoEquip(eq) {
+            const partes = [];
+            if (eq.dano) partes.push(`+${eq.dano} dano`);
+            if (eq.forca) partes.push(`+${eq.forca} força`);
+            if (eq.defesa) partes.push(`+${eq.defesa} defesa`);
+            return partes.join(', ');
+        }
+
+        function atualizarLojaEquipamentos() {
+            const lojaDiv = document.getElementById('lista-equipamentos');
+            lojaDiv.innerHTML = '';
+
+            const h = jogo.heroi;
+            EQUIPAMENTOS.forEach(eq => {
+                const atual = equipado(h, eq.tipo);
+                const jaEquipado = atual && atual.id === eq.id;
+                const revenda = atual ? Math.floor(atual.preco / 2) : 0;
+                const podeComprar = !jaEquipado && h.ouro + revenda >= eq.preco;
+
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'item-loja';
+                itemDiv.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-nome">${eq.tipo === "arma" ? "🗡️" : "🛡️"} ${eq.nome}${jaEquipado ? ' <span style="color: #27ae60;">(equipado)</span>' : ''}</div>
+                        <div class="item-desc">${descricaoEquip(eq)}</div>
+                    </div>
+                    <div>
+                        <span class="ouro">${eq.preco}💰</span>
+                        <button onclick="comprarEquipamento('${eq.id}')" ${!podeComprar ? 'disabled' : ''}>
+                            ${jaEquipado ? 'Equipado' : 'Comprar'}
+                        </button>
+                    </div>
+                `;
+                lojaDiv.appendChild(itemDiv);
+            });
+        }
+
+        function comprarEquipamento(eqId) {
+            const h = jogo.heroi;
+            const eq = EQUIPAMENTOS.find(e => e.id === eqId);
+            if (!eq) return;
+
+            const atual = equipado(h, eq.tipo);
+            if (atual && atual.id === eq.id) return;
+
+            const revenda = atual ? Math.floor(atual.preco / 2) : 0;
+            if (h.ouro + revenda < eq.preco) return;
+
+            h.ouro += revenda - eq.preco;
+            h.equipamento[eq.tipo] = eq.id;
+            atualizarCidade();
+            alert(atual
+                ? `${eq.nome} equipado! (${atual.nome} revendido por ${revenda} ouro)`
+                : `${eq.nome} equipado!`);
         }
 
         function atualizarBotaoItem() {
@@ -1131,8 +1244,8 @@
                 return;
             }
 
-            if (Math.random() * 100 < chanceAcerto(h.agilidade, i.agilidade, Math.floor(h.forca / 2))) {
-                let dano = h.dano - Math.floor(i.defesa / 2);
+            if (Math.random() * 100 < chanceAcerto(h.agilidade, i.agilidade, Math.floor(forcaTotal(h) / 2))) {
+                let dano = danoTotal(h) - Math.floor(i.defesa / 2);
                 if (h.status.forcaBuff > 0) dano += 5;
                 if (dano < 1) dano = 1;
                 i.hp -= dano;
@@ -1167,7 +1280,7 @@
             }
 
             if (Math.random() * 100 < chanceAcerto(i.agilidade, h.agilidade)) {
-                let dano = i.forca - Math.floor((h.defesa + (h.status.defesaBuff > 0 ? 5 : 0)) / 2);
+                let dano = i.forca - Math.floor((defesaTotal(h) + (h.status.defesaBuff > 0 ? 5 : 0)) / 2);
                 if (dano < 1) dano = 1;
                 h.hp -= dano;
                 if (h.hp < 0) h.hp = 0;
@@ -1394,6 +1507,10 @@
                     xpTotal: 0,
                     vitoriasSdeBoss: 0,
                     habilidades: ["golpe_forte"],
+                    equipamento: {
+                        arma: null,
+                        armadura: null
+                    },
                     status: {
                         veneno: 0,
                         paralisia: 0,
@@ -1452,6 +1569,9 @@
                 }
                 if (dados.heroi.vitoriasSdeBoss === undefined) {
                     dados.heroi.vitoriasSdeBoss = 0;
+                }
+                if (dados.heroi.equipamento === undefined) {
+                    dados.heroi.equipamento = { arma: null, armadura: null };
                 }
 
                 jogo.heroi = dados.heroi;
