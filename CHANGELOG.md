@@ -5,6 +5,9 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/);
 versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não lançado]
+### Removido
+- Arquivos de configuração do Replit (`.replit`, `replit.md`); o projeto
+  vive no GitHub e roda abrindo o `index.html`.
 
 ## [0.2.0] - 2026-06-05
 ### Modificado
