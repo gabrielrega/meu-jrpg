@@ -12,6 +12,11 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 - README atualizado: 50 monstros (em vez de "25+"), chefes, MP/habilidades,
   salvar/carregar e script de simulação; autor preenchido.
 
+### Corrigido
+- Simulação de balanceamento usava os atributos antigos dos monstros
+  (anteriores ao rebalanceamento da 0.2.0); tabela ressincronizada com o
+  jogo.
+
 ### Removido
 - Arquivos de configuração do Replit (`.replit`, `replit.md`); o projeto
   vive no GitHub e roda abrindo o `index.html`.
