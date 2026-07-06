@@ -32,6 +32,10 @@ const HEROI_INICIAL = {
     xpTotal: 0,
     vitoriasSdeBoss: 0,
     habilidades: ["golpe_forte"],
+    equipamento: {
+        arma: null,
+        armadura: null
+    },
     status: {
         veneno: 0,
         paralisia: 0,
@@ -63,6 +67,17 @@ const CONSUMIVEIS_LOJA = [
     { id: "antidoto", nome: "Antídoto", preco: 20, descricao: "Remove veneno e paralisia" },
     { id: "pocaoForca", nome: "Poção de Força", preco: 50, descricao: "Aumenta ataque por 5 turnos" },
     { id: "pocaoDefesa", nome: "Poção de Defesa", preco: 40, descricao: "Aumenta defesa por 5 turnos" }
+];
+
+const EQUIPAMENTOS = [
+    { id: "adaga", nome: "Adaga Enferrujada", tipo: "arma", preco: 60, dano: 3 },
+    { id: "espada_curta", nome: "Espada Curta", tipo: "arma", preco: 150, dano: 5 },
+    { id: "machado_guerra", nome: "Machado de Guerra", tipo: "arma", preco: 350, dano: 9, forca: 2 },
+    { id: "lamina_dragao", nome: "Lâmina do Dragão", tipo: "arma", preco: 800, dano: 15, forca: 4 },
+    { id: "couro", nome: "Armadura de Couro", tipo: "armadura", preco: 50, defesa: 3 },
+    { id: "cota_malha", nome: "Cota de Malha", tipo: "armadura", preco: 140, defesa: 5 },
+    { id: "placas", nome: "Armadura de Placas", tipo: "armadura", preco: 320, defesa: 9 },
+    { id: "escama_dragao", nome: "Escama de Dragão", tipo: "armadura", preco: 750, defesa: 13 }
 ];
 
 const MONSTROS = [
@@ -147,6 +162,7 @@ let estatisticasGerais = {
     ouroFinalJogos: [],
     monstrosMaisLetais: {},
     consumiveisUsados: { pocao: 0, antidoto: 0, pocaoForca: 0, pocaoDefesa: 0 },
+    equipamentosComprados: { adaga: 0, espada_curta: 0, machado_guerra: 0, lamina_dragao: 0, couro: 0, cota_malha: 0, placas: 0, escama_dragao: 0 },
     causasMorte: {},
     tempoMedioJogo: []
 };
@@ -198,6 +214,24 @@ function chanceAcerto(agilAtacante, agilDefensor, bonusForca = 0) {
     let chance = 75 + (agilAtacante - agilDefensor) * 3 + bonusForca;
     return Math.max(20, Math.min(95, chance));
 }
+
+// Equipamentos: mesmos helpers do jogo (bônus derivados, sem mutar atributos base)
+function equipado(h, slot) {
+    return EQUIPAMENTOS.find(e => e.id === h.equipamento[slot]) || null;
+}
+
+function bonusEquip(h, attr) {
+    let total = 0;
+    for (const slot of ["arma", "armadura"]) {
+        const eq = equipado(h, slot);
+        if (eq && eq[attr]) total += eq[attr];
+    }
+    return total;
+}
+
+function danoTotal(h) { return h.dano + bonusEquip(h, "dano"); }
+function forcaTotal(h) { return h.forca + bonusEquip(h, "forca"); }
+function defesaTotal(h) { return h.defesa + bonusEquip(h, "defesa"); }
 
 function processarStatus(entidade) {
     let danoVeneno = 0;
@@ -254,16 +288,17 @@ function iaUsarItem(heroi, inimigo) {
     return false;
 }
 
-function comprarItensIA(heroi) {
+function comprarItensIA(heroi, capPocao = 5, capAntidoto = 3, incluirBuffs = true) {
     // IA simples para comprar itens
-    while (heroi.ouro >= CONSUMIVEIS_LOJA.find(c => c.id === "pocao").preco && heroi.inventario.pocao < 5) {
+    while (heroi.ouro >= CONSUMIVEIS_LOJA.find(c => c.id === "pocao").preco && heroi.inventario.pocao < capPocao) {
         heroi.ouro -= CONSUMIVEIS_LOJA.find(c => c.id === "pocao").preco;
         heroi.inventario.pocao++;
     }
-    while (heroi.ouro >= CONSUMIVEIS_LOJA.find(c => c.id === "antidoto").preco && heroi.inventario.antidoto < 3) {
+    while (heroi.ouro >= CONSUMIVEIS_LOJA.find(c => c.id === "antidoto").preco && heroi.inventario.antidoto < capAntidoto) {
         heroi.ouro -= CONSUMIVEIS_LOJA.find(c => c.id === "antidoto").preco;
         heroi.inventario.antidoto++;
     }
+    if (!incluirBuffs) return;
     if (heroi.ouro >= CONSUMIVEIS_LOJA.find(c => c.id === "pocaoForca").preco && heroi.inventario.pocaoForca < 2) {
         heroi.ouro -= CONSUMIVEIS_LOJA.find(c => c.id === "pocaoForca").preco;
         heroi.inventario.pocaoForca++;
@@ -271,6 +306,23 @@ function comprarItensIA(heroi) {
     if (heroi.ouro >= CONSUMIVEIS_LOJA.find(c => c.id === "pocaoDefesa").preco && heroi.inventario.pocaoDefesa < 2) {
         heroi.ouro -= CONSUMIVEIS_LOJA.find(c => c.id === "pocaoDefesa").preco;
         heroi.inventario.pocaoDefesa++;
+    }
+}
+
+function comprarEquipamentosIA(heroi) {
+    // Compra o melhor upgrade que couber no ouro, com revenda de 50% do atual
+    // (mesma regra do jogo); consumíveis e recuperação têm prioridade
+    for (const tipo of ["arma", "armadura"]) {
+        const atual = equipado(heroi, tipo);
+        const revenda = atual ? Math.floor(atual.preco / 2) : 0;
+        const melhor = EQUIPAMENTOS
+            .filter(e => e.tipo === tipo && (!atual || e.preco > atual.preco) && heroi.ouro + revenda >= e.preco)
+            .sort((a, b) => b.preco - a.preco)[0];
+        if (melhor) {
+            heroi.ouro += revenda - melhor.preco;
+            heroi.equipamento[tipo] = melhor.id;
+            estatisticasGerais.equipamentosComprados[melhor.id]++;
+        }
     }
 }
 
@@ -291,8 +343,8 @@ function simularBatalha(heroi, inimigo) {
                 log.push(`Turno ${turnos}: Herói usou item`);
             } else {
                 // Atacar
-                if (Math.random() * 100 < chanceAcerto(heroi.agilidade, inimigo.agilidade, Math.floor(heroi.forca / 2))) {
-                    let dano = heroi.dano - Math.floor(inimigo.defesa / 2);
+                if (Math.random() * 100 < chanceAcerto(heroi.agilidade, inimigo.agilidade, Math.floor(forcaTotal(heroi) / 2))) {
+                    let dano = danoTotal(heroi) - Math.floor(inimigo.defesa / 2);
                     if (heroi.status.forcaBuff > 0) dano += 5;
                     dano = Math.max(1, dano);
                     inimigo.hp -= dano;
@@ -314,7 +366,7 @@ function simularBatalha(heroi, inimigo) {
             log.push(`Turno ${turnos}: ${inimigo.nome} paralisado, perdeu o turno`);
         } else {
             if (Math.random() * 100 < chanceAcerto(inimigo.agilidade, heroi.agilidade)) {
-                let dano = inimigo.forca - Math.floor((heroi.defesa + (heroi.status.defesaBuff > 0 ? 5 : 0)) / 2);
+                let dano = inimigo.forca - Math.floor((defesaTotal(heroi) + (heroi.status.defesaBuff > 0 ? 5 : 0)) / 2);
                 dano = Math.max(1, dano);
                 heroi.hp -= dano;
                 log.push(`Turno ${turnos}: ${inimigo.nome} acertou por ${dano} dano`);
@@ -353,15 +405,19 @@ function simularJogoCompleto() {
     const inicioJogo = Date.now();
     
     for (let batalha = 0; batalha < CONFIG_SIMULACAO.maxBatalhasPorJogo; batalha++) {
-        // Comprar itens na cidade
-        comprarItensIA(heroi);
-        
+        // Compras na cidade: estoque mínimo de sobrevivência, cura,
+        // depois equipamentos e só então completar o estoque
+        comprarItensIA(heroi, 2, 1, false);
+
         // Recuperar HP se necessário e tiver ouro
         if (heroi.hp < heroi.hpMax * 0.7 && heroi.ouro >= CONFIG_GAME.custoRecuperacao) {
             heroi.ouro -= CONFIG_GAME.custoRecuperacao;
             heroi.hp = heroi.hpMax;
         }
-        
+
+        comprarEquipamentosIA(heroi);
+        comprarItensIA(heroi);
+
         // Iniciar batalha
         const inimigo = seleccionarInimigo(heroi);
         const resultadoBatalha = simularBatalha(heroi, inimigo);
@@ -506,6 +562,11 @@ function executarSimulacao() {
     console.log(`   Poções de força: ${estatisticasGerais.consumiveisUsados.pocaoForca}`);
     console.log(`   Poções de defesa: ${estatisticasGerais.consumiveisUsados.pocaoDefesa}`);
     
+    console.log(`\n🗡️ EQUIPAMENTOS COMPRADOS:`);
+    EQUIPAMENTOS.forEach(eq => {
+        console.log(`   ${eq.nome}: ${estatisticasGerais.equipamentosComprados[eq.id]}`);
+    });
+
     console.log(`\n💀 TOP 10 MONSTROS MAIS LETAIS:`);
     const monstrosOrdenados = Object.entries(estatisticasGerais.monstrosMaisLetais)
         .sort((a, b) => b[1] - a[1])

@@ -12,14 +12,15 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
   entra no save (com retrocompatibilidade para saves antigos).
 - Arquivo `LICENSE` (MIT), que o README já citava.
 
-### Modificado
-- README atualizado: 50 monstros (em vez de "25+"), chefes, MP/habilidades,
-  salvar/carregar e script de simulação; autor preenchido.
-
 ### Corrigido
 - Simulação de balanceamento usava os atributos antigos dos monstros
   (anteriores ao rebalanceamento da 0.2.0); tabela ressincronizada com o
-  jogo.
+  jogo. A IA da simulação também compra equipamentos (prioridade: estoque
+  mínimo de consumíveis → cura → equipamento → completar estoque).
+
+### Modificado
+- README atualizado: 50 monstros (em vez de "25+"), chefes, MP/habilidades,
+  salvar/carregar e script de simulação; autor preenchido.
 
 ### Removido
 - Arquivos de configuração do Replit (`.replit`, `replit.md`); o projeto
