@@ -5,7 +5,7 @@ Guia para o Claude Code neste repositório. As convenções gerais da pasta `pro
 ## Ficha
 
 - **Pergunta**: Um RPG de batalha por turnos em HTML único consegue ter progressão e tática com dificuldade equilibrada?
-- **Status**: v0.2.0, ativo. Roteiro: equipamentos (feito) → habilidades de chefes → eventos → mapas.
+- **Status**: v0.3.0, ativo. Roteiro: equipamentos (feito) → habilidades de chefes → eventos → mapas.
 - **Entradas**: Nenhuma externa; progresso salvo no `localStorage`.
 - **Saídas**: O jogo em `index.html`.
 - **Rodar**: Abrir `index.html` no navegador; balanceamento `node teste-balanceamento.js`.

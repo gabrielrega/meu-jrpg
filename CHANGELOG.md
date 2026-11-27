@@ -5,6 +5,8 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/);
 versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não lançado]
+
+## [0.3.0] - 2026-11-27
 ### Adicionado
 - Sistema de equipamentos: loja com 4 armas (+dano; tiers altos também
   +força) e 4 armaduras (+defesa). Comprar equipa na hora e o item anterior
